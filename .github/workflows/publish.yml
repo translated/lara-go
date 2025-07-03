@@ -1,0 +1,43 @@
+name: Publish
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - v*
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.16'
+
+      - name: Clean up dependencies
+        run: go mod tidy
+
+      - name: Verify no changes after clean up
+        run: |
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "Error: go mod tidy made changes. Please commit these changes first:"
+            git status --porcelain
+            git diff
+            exit 1
+          fi
+
+      - name: Build Go module
+        run: go build
+
+      - name: Publish to Go proxy
+        env:
+          GOPROXY: proxy.golang.org
+        run: |
+          MODULE_NAME=$(go list -m)
+          echo "Publishing module: $MODULE_NAME@$GITHUB_REF_NAME"
+          go list -m "$MODULE_NAME@$GITHUB_REF_NAME"
