@@ -1,3 +1,3 @@
 module github.com/translated/lara-go
 
-go 1.24.3
+go 1.16
