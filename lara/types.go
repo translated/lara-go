@@ -85,17 +85,16 @@ type TextBlock struct {
 }
 
 type NGMemoryMatch struct {
-	Memory      string  `json:"memory"`
-	TUID        *string `json:"tuid,omitempty"`
-	Source      string  `json:"source"`
-	Target      string  `json:"target"`
-	Sentence    string  `json:"sentence"`
-	Translation string  `json:"translation"`
-	Score       float64 `json:"score"`
+	Memory      string    `json:"memory"`
+	TUID        *string   `json:"tuid,omitempty"`
+	Language    [2]string `json:"language"`
+	Sentence    string    `json:"sentence"`
+	Translation string    `json:"translation"`
+	Score       float64   `json:"score"`
 }
 
 type NGGlossaryMatch struct {
-	Memory      string    `json:"memory"`
+	Glossary    string    `json:"glossary"`
 	Language    [2]string `json:"language"`
 	Term        string    `json:"term"`
 	Translation string    `json:"translation"`
