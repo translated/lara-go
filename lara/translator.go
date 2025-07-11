@@ -47,6 +47,7 @@ type TranslateOptions struct {
 	SourceHint   string
 	NoTrace      *bool
 	Verbose      *bool
+	Headers      map[string]interface{}
 }
 
 type Translation struct {
@@ -140,11 +141,17 @@ func (t *Translator) Translate(text interface{}, source string, target string, o
 		body["verbose"] = *opts.Verbose
 	}
 
-	var headers map[string]string
-	if opts.NoTrace != nil && *opts.NoTrace {
-		headers = map[string]string{
-			"X-No-Trace": "true",
+	headers := make(map[string]string)
+	if opts.Headers != nil {
+		for name, value := range opts.Headers {
+			if value != nil {
+				headers[name] = fmt.Sprint(value)
+			}
 		}
+	}
+
+	if opts.NoTrace != nil && *opts.NoTrace {
+		headers["X-No-Trace"] = "true"
 	}
 
 	var result TextResult
