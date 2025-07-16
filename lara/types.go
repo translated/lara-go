@@ -73,6 +73,7 @@ type DocumentUploadOptions struct {
 	AdaptTo    []string
 	Glossaries []string
 	NoTrace    *bool
+	Style      TranslationStyle
 }
 
 type DocumentOptions struct {
@@ -103,3 +104,11 @@ type NGGlossaryMatch struct {
 type TranslatorOptions struct {
 	ServerURL string
 }
+
+type TranslationStyle string
+
+const (
+	TranslationStyleFaithful TranslationStyle = "faithful"
+	TranslationStyleFluid    TranslationStyle = "fluid"
+	TranslationStyleCreative TranslationStyle = "creative"
+)

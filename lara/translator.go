@@ -47,6 +47,7 @@ type TranslateOptions struct {
 	SourceHint   string
 	NoTrace      *bool
 	Verbose      *bool
+	Style        TranslationStyle
 	Headers      map[string]interface{}
 }
 
@@ -139,6 +140,9 @@ func (t *Translator) Translate(text interface{}, source string, target string, o
 	}
 	if opts.Verbose != nil {
 		body["verbose"] = *opts.Verbose
+	}
+	if opts.Style != "" {
+		body["style"] = opts.Style
 	}
 
 	headers := make(map[string]string)

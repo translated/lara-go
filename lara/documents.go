@@ -56,6 +56,9 @@ func (d *DocumentsService) UploadWithOptions(filePath, filename, source *string,
 		if len(options.Glossaries) > 0 {
 			body["glossaries"] = options.Glossaries
 		}
+		if options.Style != "" {
+			body["style"] = options.Style
+		}
 	}
 
 	var headers map[string]string
@@ -116,6 +119,7 @@ func (d *DocumentsService) TranslateWithOptions(filePath, filename, source *stri
 		uploadOptions.AdaptTo = options.AdaptTo
 		uploadOptions.Glossaries = options.Glossaries
 		uploadOptions.NoTrace = options.NoTrace
+		uploadOptions.Style = options.Style
 	}
 
 	document, err := d.UploadWithOptions(filePath, filename, source, target, uploadOptions)
