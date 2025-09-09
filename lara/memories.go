@@ -154,14 +154,26 @@ func (m *MemoriesService) GetImportStatus(id string) (*MemoryImport, error) {
 }
 
 func (m *MemoriesService) AddTranslation(id, source, target, sentence, translation string) (*MemoryImport, error) {
-	return m.AddTranslationWithTuid(id, source, target, sentence, translation, "")
+	return m.AddTranslationWithContextAndHeaders(id, source, target, sentence, translation, "", "", "", nil)
+}
+
+func (m *MemoriesService) AddTranslationWithHeaders(id, source, target, sentence, translation string, headers map[string]string) (*MemoryImport, error) {
+	return m.AddTranslationWithContextAndHeaders(id, source, target, sentence, translation, "", "", "", headers)
 }
 
 func (m *MemoriesService) AddTranslationWithTuid(id, source, target, sentence, translation, tuid string) (*MemoryImport, error) {
-	return m.AddTranslationWithContext(id, source, target, sentence, translation, tuid, "", "")
+	return m.AddTranslationWithContextAndHeaders(id, source, target, sentence, translation, tuid, "", "", nil)
+}
+
+func (m *MemoriesService) AddTranslationWithTuidAndHeaders(id, source, target, sentence, translation, tuid string, headers map[string]string) (*MemoryImport, error) {
+	return m.AddTranslationWithContextAndHeaders(id, source, target, sentence, translation, tuid, "", "", headers)
 }
 
 func (m *MemoriesService) AddTranslationWithContext(id, source, target, sentence, translation, tuid, sentenceBefore, sentenceAfter string) (*MemoryImport, error) {
+	return m.AddTranslationWithContextAndHeaders(id, source, target, sentence, translation, tuid, sentenceBefore, sentenceAfter, nil)
+}
+
+func (m *MemoriesService) AddTranslationWithContextAndHeaders(id, source, target, sentence, translation, tuid, sentenceBefore, sentenceAfter string, headers map[string]string) (*MemoryImport, error) {
 	body := map[string]interface{}{
 		"source":      source,
 		"target":      target,
@@ -179,7 +191,7 @@ func (m *MemoriesService) AddTranslationWithContext(id, source, target, sentence
 	}
 
 	var memoryImport MemoryImport
-	err := m.client.Put(fmt.Sprintf("/memories/%s/content", id), body, nil, nil, &memoryImport)
+	err := m.client.Put(fmt.Sprintf("/memories/%s/content", id), body, nil, headers, &memoryImport)
 	if err != nil {
 		return nil, fmt.Errorf("failed to add translation: %w", err)
 	}
@@ -188,14 +200,26 @@ func (m *MemoriesService) AddTranslationWithContext(id, source, target, sentence
 }
 
 func (m *MemoriesService) AddTranslationMultiple(ids []string, source, target, sentence, translation string) (*MemoryImport, error) {
-	return m.AddTranslationMultipleWithTuid(ids, source, target, sentence, translation, "")
+	return m.AddTranslationMultipleWithContextAndHeaders(ids, source, target, sentence, translation, "", "", "", nil)
+}
+
+func (m *MemoriesService) AddTranslationMultipleWithHeaders(ids []string, source, target, sentence, translation string, headers map[string]string) (*MemoryImport, error) {
+	return m.AddTranslationMultipleWithContextAndHeaders(ids, source, target, sentence, translation, "", "", "", headers)
 }
 
 func (m *MemoriesService) AddTranslationMultipleWithTuid(ids []string, source, target, sentence, translation, tuid string) (*MemoryImport, error) {
-	return m.AddTranslationMultipleWithContext(ids, source, target, sentence, translation, tuid, "", "")
+	return m.AddTranslationMultipleWithContextAndHeaders(ids, source, target, sentence, translation, tuid, "", "", nil)
+}
+
+func (m *MemoriesService) AddTranslationMultipleWithTuidAndHeaders(ids []string, source, target, sentence, translation, tuid string, headers map[string]string) (*MemoryImport, error) {
+	return m.AddTranslationMultipleWithContextAndHeaders(ids, source, target, sentence, translation, tuid, "", "", headers)
 }
 
 func (m *MemoriesService) AddTranslationMultipleWithContext(ids []string, source, target, sentence, translation, tuid, sentenceBefore, sentenceAfter string) (*MemoryImport, error) {
+	return m.AddTranslationMultipleWithContextAndHeaders(ids, source, target, sentence, translation, tuid, sentenceBefore, sentenceAfter, nil)
+}
+
+func (m *MemoriesService) AddTranslationMultipleWithContextAndHeaders(ids []string, source, target, sentence, translation, tuid, sentenceBefore, sentenceAfter string, headers map[string]string) (*MemoryImport, error) {
 	body := map[string]interface{}{
 		"ids":         ids,
 		"source":      source,
@@ -214,7 +238,7 @@ func (m *MemoriesService) AddTranslationMultipleWithContext(ids []string, source
 	}
 
 	var memoryImport MemoryImport
-	err := m.client.Put("/memories/content", body, nil, nil, &memoryImport)
+	err := m.client.Put("/memories/content", body, nil, headers, &memoryImport)
 	if err != nil {
 		return nil, fmt.Errorf("failed to add multiple translations: %w", err)
 	}
@@ -223,7 +247,7 @@ func (m *MemoriesService) AddTranslationMultipleWithContext(ids []string, source
 }
 
 func (m *MemoriesService) DeleteTranslation(id, source, target, sentence, translation string) (*MemoryImport, error) {
-	return m.DeleteTranslationWithTuid(id, source, target, sentence, translation, "")
+	return m.DeleteTranslationWithContext(id, source, target, sentence, translation, "", "", "")
 }
 
 func (m *MemoriesService) DeleteTranslationWithTuid(id, source, target, sentence, translation, tuid string) (*MemoryImport, error) {
@@ -257,7 +281,7 @@ func (m *MemoriesService) DeleteTranslationWithContext(id, source, target, sente
 }
 
 func (m *MemoriesService) DeleteTranslationMultiple(ids []string, source, target, sentence, translation string) (*MemoryImport, error) {
-	return m.DeleteTranslationMultipleWithTuid(ids, source, target, sentence, translation, "")
+	return m.DeleteTranslationMultipleWithContext(ids, source, target, sentence, translation, "", "", "")
 }
 
 func (m *MemoriesService) DeleteTranslationMultipleWithTuid(ids []string, source, target, sentence, translation, tuid string) (*MemoryImport, error) {
