@@ -65,20 +65,34 @@ type Document struct {
 	ErrorReason     *string          `json:"error_reason,omitempty"`
 }
 
+type DocumentOptions struct {
+	AdaptTo    []string         `json:"adapt_to,omitempty"`
+	Glossaries []string         `json:"glossaries,omitempty"`
+	NoTrace    *bool            `json:"no_trace,omitempty"`
+	Style      TranslationStyle `json:"style,omitempty"`
+}
+
 type DocumentDownloadOptions struct {
 	OutputFormat string
 }
 
 type DocumentUploadOptions struct {
-	AdaptTo    []string
-	Glossaries []string
-	NoTrace    *bool
-	Style      TranslationStyle
+	DocumentOptions
+	ExtractionParams DocumentExtractionParams `json:"extraction_params,omitempty"`
+	Password         *string                  `json:"password,omitempty"`
 }
 
-type DocumentOptions struct {
-	DocumentUploadOptions
+type DocxExtractionParams struct {
+	ExtractComments *bool `json:"extract_comments,omitempty"`
+	AcceptRevisions *bool `json:"accept_revisions,omitempty"`
 }
+
+// Used to handle future extraction parameter types
+type DocumentExtractionParams interface {
+	extractionParams()
+}
+
+func (DocxExtractionParams) extractionParams() {}
 
 type TextBlock struct {
 	Text         string `json:"text"`

@@ -59,6 +59,12 @@ func (d *DocumentsService) UploadWithOptions(filePath, filename, source *string,
 		if options.Style != "" {
 			body["style"] = options.Style
 		}
+		if options.ExtractionParams != nil {
+			body["extraction_params"] = options.ExtractionParams
+		}
+		if options.Password != nil {
+			body["password"] = *options.Password
+		}
 	}
 
 	var headers map[string]string
@@ -120,6 +126,8 @@ func (d *DocumentsService) TranslateWithOptions(filePath, filename, source *stri
 		uploadOptions.Glossaries = options.Glossaries
 		uploadOptions.NoTrace = options.NoTrace
 		uploadOptions.Style = options.Style
+		uploadOptions.ExtractionParams = options.ExtractionParams
+		uploadOptions.Password = options.Password
 	}
 
 	document, err := d.UploadWithOptions(filePath, filename, source, target, uploadOptions)
