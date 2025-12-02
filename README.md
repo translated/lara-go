@@ -123,6 +123,18 @@ cd examples
 go run glossaries_management.go
 ```
 
+### Language Detection
+- **[language_detection.go](examples/language_detection.go)** - Language detection examples
+  - Detect language from a single string
+  - Detect language from multiple strings
+  - Detect with hint parameter
+  - Detect with passlist (allowlist) parameter
+
+```bash
+cd examples
+go run language_detection.go
+```
+
 ## 🔧 API Reference
 
 ### Core Components
@@ -180,6 +192,29 @@ result, err := laraTranslator.Translate("Hello", "en-US", "fr-FR", lara.Translat
     Style:        lara.TranslationStyleFluid,
     TimeoutMs:    10000,
 })
+```
+
+#### Language Detection
+
+```go
+// Basic detection
+result, err := laraTranslator.Detect("Bonjour le monde!", "", nil)
+
+// Multiple strings
+result, err := laraTranslator.Detect([]string{"Hello", "World"}, "", nil)
+
+// With hint
+result, err := laraTranslator.Detect("Ciao mondo!", "it-IT", nil)
+
+// With passlist (allowlist)
+result, err := laraTranslator.Detect("Hola mundo!", "", []string{"en-US", "fr-FR", "es-ES"})
+
+// With both hint and passlist
+result, err := laraTranslator.Detect("Guten Tag!", "de-DE", []string{"de-DE", "en-US", "fr-FR"})
+
+// Access results
+fmt.Printf("Language: %s\n", result.Language)
+fmt.Printf("Content Type: %s\n", result.ContentType)
 ```
 
 ### 📖 Document Translation

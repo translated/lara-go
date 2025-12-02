@@ -51,6 +51,11 @@ type TranslateOptions struct {
 	Headers      map[string]interface{}
 }
 
+type DetectOptions struct {
+	Hint     string
+	Passlist []string
+}
+
 type Translation struct {
 	String     *string
 	Strings    []string
@@ -175,4 +180,26 @@ func (t *Translator) Languages() ([]string, error) {
 	}
 
 	return languages, nil
+}
+
+func (t *Translator) Detect(text interface{}, hint string, passlist []string) (*DetectResult, error) {
+	body := map[string]interface{}{
+		"q": text,
+	}
+
+	if hint != "" {
+		body["hint"] = hint
+	}
+
+	if len(passlist) > 0 {
+		body["passlist"] = passlist
+	}
+
+	var result DetectResult
+	err := t.client.Post("/detect", body, nil, nil, &result)
+	if err != nil {
+		return nil, fmt.Errorf("failed to detect language: %w", err)
+	}
+
+	return &result, nil
 }

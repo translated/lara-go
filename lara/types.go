@@ -126,3 +126,8 @@ const (
 	TranslationStyleFluid    TranslationStyle = "fluid"
 	TranslationStyleCreative TranslationStyle = "creative"
 )
+
+type DetectResult struct {
+	Language    string `json:"language"`
+	ContentType string `json:"content_type"`
+}
