@@ -127,7 +127,13 @@ const (
 	TranslationStyleCreative TranslationStyle = "creative"
 )
 
+type DetectPrediction struct {
+	Language   string  `json:"language"`
+	Confidence float64 `json:"confidence"`
+}
+
 type DetectResult struct {
-	Language    string `json:"language"`
-	ContentType string `json:"content_type"`
+	Language    string             `json:"language"`
+	ContentType string             `json:"content_type"`
+	Predictions []DetectPrediction `json:"predictions"`
 }

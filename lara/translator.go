@@ -48,7 +48,9 @@ type TranslateOptions struct {
 	NoTrace      *bool
 	Verbose      *bool
 	Style        TranslationStyle
+	Reasoning    *bool
 	Headers      map[string]interface{}
+	Callback     func(*TextResult) error
 }
 
 type DetectOptions struct {
@@ -149,6 +151,9 @@ func (t *Translator) Translate(text interface{}, source string, target string, o
 	if opts.Style != "" {
 		body["style"] = opts.Style
 	}
+	if opts.Reasoning != nil {
+		body["reasoning"] = *opts.Reasoning
+	}
 
 	headers := make(map[string]string)
 	if opts.Headers != nil {
@@ -163,13 +168,33 @@ func (t *Translator) Translate(text interface{}, source string, target string, o
 		headers["X-No-Trace"] = "true"
 	}
 
-	var result TextResult
-	err := t.client.Post("/translate", body, nil, headers, &result)
+	// Use streaming if callback is provided
+	var lastResult *TextResult
+	err := t.client.PostAndGetStream("/translate", body, headers, func(contentBytes []byte) error {
+		var result TextResult
+		if err := json.Unmarshal(contentBytes, &result); err != nil {
+			return fmt.Errorf("failed to unmarshal partial result: %w", err)
+		}
+		lastResult = &result
+
+		// Only invoke callback if reasoning is enabled
+		if opts.Callback != nil && opts.Reasoning != nil && *opts.Reasoning {
+			if err := opts.Callback(&result); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to translate text: %w", err)
 	}
 
-	return &result, nil
+	if lastResult == nil {
+		return nil, fmt.Errorf("no translation result received")
+	}
+
+	return lastResult, nil
 }
 
 func (t *Translator) Languages() ([]string, error) {
