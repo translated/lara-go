@@ -33,7 +33,7 @@ func newClient(accessKeyID, accessKeySecret, baseURL string) *Client {
 		baseURL:         strings.TrimRight(baseURL, "/"),
 		httpClient:      &http.Client{},
 		sdkName:         "lara-go",
-		sdkVersion:      "1.1.0",
+		sdkVersion:      "1.2.0",
 	}
 }
 
