@@ -20,7 +20,7 @@ func newMemoriesService(client *Client) *MemoriesService {
 
 func (m *MemoriesService) List() ([]Memory, error) {
 	var memories []Memory
-	err := m.client.Get("/memories", nil, nil, &memories)
+	err := m.client.Get("/v2/memories", nil, nil, &memories)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list memories: %w", err)
 	}
@@ -40,7 +40,7 @@ func (m *MemoriesService) CreateWithExternalID(name string, externalID string) (
 	}
 
 	var memory Memory
-	err := m.client.Post("/memories", body, nil, nil, &memory)
+	err := m.client.Post("/v2/memories", body, nil, nil, &memory)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create memory: %w", err)
 	}
@@ -50,7 +50,7 @@ func (m *MemoriesService) CreateWithExternalID(name string, externalID string) (
 
 func (m *MemoriesService) Get(id string) (*Memory, error) {
 	var memory Memory
-	err := m.client.Get(fmt.Sprintf("/memories/%s", id), nil, nil, &memory)
+	err := m.client.Get(fmt.Sprintf("/v2/memories/%s", id), nil, nil, &memory)
 	if err != nil {
 		if laraErr, ok := err.(*LaraError); ok && laraErr.Status == 404 {
 			return nil, nil
@@ -63,7 +63,7 @@ func (m *MemoriesService) Get(id string) (*Memory, error) {
 
 func (m *MemoriesService) Delete(id string) (*Memory, error) {
 	var memory Memory
-	err := m.client.Delete(fmt.Sprintf("/memories/%s", id), nil, nil, &memory)
+	err := m.client.Delete(fmt.Sprintf("/v2/memories/%s", id), nil, nil, &memory)
 	if err != nil {
 		return nil, fmt.Errorf("failed to delete memory: %w", err)
 	}
@@ -77,7 +77,7 @@ func (m *MemoriesService) Update(id, name string) (*Memory, error) {
 	}
 
 	var memory Memory
-	err := m.client.Put(fmt.Sprintf("/memories/%s", id), body, nil, nil, &memory)
+	err := m.client.Put(fmt.Sprintf("/v2/memories/%s", id), body, nil, nil, &memory)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update memory: %w", err)
 	}
@@ -91,7 +91,7 @@ func (m *MemoriesService) ConnectMultiple(ids []string) ([]Memory, error) {
 	}
 
 	var memories []Memory
-	err := m.client.Post("/memories/connect", body, nil, nil, &memories)
+	err := m.client.Post("/v2/memories/connect", body, nil, nil, &memories)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect memories: %w", err)
 	}
@@ -135,7 +135,7 @@ func (m *MemoriesService) ImportTmx(id string, tmx *os.File) (*MemoryImport, err
 	}
 
 	var memoryImport MemoryImport
-	err := m.client.Post(fmt.Sprintf("/memories/%s/import", id), body, files, nil, &memoryImport)
+	err := m.client.Post(fmt.Sprintf("/v2/memories/%s/import", id), body, files, nil, &memoryImport)
 	if err != nil {
 		return nil, fmt.Errorf("failed to import TMX: %w", err)
 	}
@@ -145,7 +145,7 @@ func (m *MemoriesService) ImportTmx(id string, tmx *os.File) (*MemoryImport, err
 
 func (m *MemoriesService) GetImportStatus(id string) (*MemoryImport, error) {
 	var memoryImport MemoryImport
-	err := m.client.Get(fmt.Sprintf("/memories/imports/%s", id), nil, nil, &memoryImport)
+	err := m.client.Get(fmt.Sprintf("/v2/memories/imports/%s", id), nil, nil, &memoryImport)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get import status: %w", err)
 	}
@@ -191,7 +191,7 @@ func (m *MemoriesService) AddTranslationWithContextAndHeaders(id, source, target
 	}
 
 	var memoryImport MemoryImport
-	err := m.client.Put(fmt.Sprintf("/memories/%s/content", id), body, nil, headers, &memoryImport)
+	err := m.client.Put(fmt.Sprintf("/v2/memories/%s/content", id), body, nil, headers, &memoryImport)
 	if err != nil {
 		return nil, fmt.Errorf("failed to add translation: %w", err)
 	}
@@ -238,7 +238,7 @@ func (m *MemoriesService) AddTranslationMultipleWithContextAndHeaders(ids []stri
 	}
 
 	var memoryImport MemoryImport
-	err := m.client.Put("/memories/content", body, nil, headers, &memoryImport)
+	err := m.client.Put("/v2/memories/content", body, nil, headers, &memoryImport)
 	if err != nil {
 		return nil, fmt.Errorf("failed to add multiple translations: %w", err)
 	}
@@ -272,7 +272,7 @@ func (m *MemoriesService) DeleteTranslationWithContext(id, source, target, sente
 	}
 
 	var memoryImport MemoryImport
-	err := m.client.Delete(fmt.Sprintf("/memories/%s/content", id), body, nil, &memoryImport)
+	err := m.client.Delete(fmt.Sprintf("/v2/memories/%s/content", id), body, nil, &memoryImport)
 	if err != nil {
 		return nil, fmt.Errorf("failed to delete translation: %w", err)
 	}
@@ -307,7 +307,7 @@ func (m *MemoriesService) DeleteTranslationMultipleWithContext(ids []string, sou
 	}
 
 	var memoryImport MemoryImport
-	err := m.client.Delete("/memories/content", body, nil, &memoryImport)
+	err := m.client.Delete("/v2/memories/content", body, nil, &memoryImport)
 	if err != nil {
 		return nil, fmt.Errorf("failed to delete multiple translations: %w", err)
 	}

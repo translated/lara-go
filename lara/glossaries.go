@@ -22,7 +22,7 @@ func newGlossariesService(client *Client) *GlossariesService {
 
 func (g *GlossariesService) List() ([]Glossary, error) {
 	var glossaries []Glossary
-	err := g.client.Get("/glossaries", nil, nil, &glossaries)
+	err := g.client.Get("/v2/glossaries", nil, nil, &glossaries)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list glossaries: %w", err)
 	}
@@ -35,7 +35,7 @@ func (g *GlossariesService) Create(name string) (*Glossary, error) {
 	}
 
 	var glossary Glossary
-	err := g.client.Post("/glossaries", body, nil, nil, &glossary)
+	err := g.client.Post("/v2/glossaries", body, nil, nil, &glossary)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create glossary: %w", err)
 	}
@@ -44,7 +44,7 @@ func (g *GlossariesService) Create(name string) (*Glossary, error) {
 
 func (g *GlossariesService) Get(id string) (*Glossary, error) {
 	var glossary Glossary
-	err := g.client.Get(fmt.Sprintf("/glossaries/%s", id), nil, nil, &glossary)
+	err := g.client.Get(fmt.Sprintf("/v2/glossaries/%s", id), nil, nil, &glossary)
 	if err != nil {
 		if laraErr, ok := err.(*LaraError); ok && laraErr.Status == 404 {
 			return nil, nil
@@ -56,7 +56,7 @@ func (g *GlossariesService) Get(id string) (*Glossary, error) {
 
 func (g *GlossariesService) Delete(id string) (*Glossary, error) {
 	var glossary Glossary
-	err := g.client.Delete(fmt.Sprintf("/glossaries/%s", id), nil, nil, &glossary)
+	err := g.client.Delete(fmt.Sprintf("/v2/glossaries/%s", id), nil, nil, &glossary)
 	if err != nil {
 		return nil, fmt.Errorf("failed to delete glossary: %w", err)
 	}
@@ -69,7 +69,7 @@ func (g *GlossariesService) Update(id, name string) (*Glossary, error) {
 	}
 
 	var glossary Glossary
-	err := g.client.Put(fmt.Sprintf("/glossaries/%s", id), body, nil, nil, &glossary)
+	err := g.client.Put(fmt.Sprintf("/v2/glossaries/%s", id), body, nil, nil, &glossary)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update glossary: %w", err)
 	}
@@ -101,7 +101,7 @@ func (g *GlossariesService) ImportCsv(id string, csv *os.File) (*GlossaryImport,
 	}
 
 	var glossaryImport GlossaryImport
-	err := g.client.Post(fmt.Sprintf("/glossaries/%s/import", id), body, files, nil, &glossaryImport)
+	err := g.client.Post(fmt.Sprintf("/v2/glossaries/%s/import", id), body, files, nil, &glossaryImport)
 	if err != nil {
 		return nil, fmt.Errorf("failed to import CSV to glossary: %w", err)
 	}
@@ -110,7 +110,7 @@ func (g *GlossariesService) ImportCsv(id string, csv *os.File) (*GlossaryImport,
 
 func (g *GlossariesService) GetImportStatus(id string) (*GlossaryImport, error) {
 	var glossaryImport GlossaryImport
-	err := g.client.Get(fmt.Sprintf("/glossaries/imports/%s", id), nil, nil, &glossaryImport)
+	err := g.client.Get(fmt.Sprintf("/v2/glossaries/imports/%s", id), nil, nil, &glossaryImport)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get glossary import status: %w", err)
 	}
@@ -119,7 +119,7 @@ func (g *GlossariesService) GetImportStatus(id string) (*GlossaryImport, error) 
 
 func (g *GlossariesService) Counts(id string) (*GlossaryCounts, error) {
 	var counts GlossaryCounts
-	err := g.client.Get(fmt.Sprintf("/glossaries/%s/counts", id), nil, nil, &counts)
+	err := g.client.Get(fmt.Sprintf("/v2/glossaries/%s/counts", id), nil, nil, &counts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get glossary counts: %w", err)
 	}
@@ -134,7 +134,7 @@ func (g *GlossariesService) Export(id string, contentType string, source *string
 		params["source"] = *source
 	}
 
-	content, err := g.client.GetRaw(fmt.Sprintf("/glossaries/%s/export", id), params, nil)
+	content, err := g.client.GetRaw(fmt.Sprintf("/v2/glossaries/%s/export", id), params, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to export glossary: %w", err)
 	}
@@ -165,4 +165,37 @@ func (g *GlossariesService) WaitForImport(glossaryImport *GlossaryImport, update
 	}
 
 	return &current, nil
+}
+
+func (g *GlossariesService) AddOrReplaceEntry(id string, terms []GlossaryTerm, guid *string) (*GlossaryImport, error) {
+	body := map[string]interface{}{
+		"terms": terms,
+	}
+	if guid != nil {
+		body["guid"] = *guid
+	}
+
+	var glossaryImport GlossaryImport
+	err := g.client.Put(fmt.Sprintf("/v2/glossaries/%s/content", id), body, nil, nil, &glossaryImport)
+	if err != nil {
+		return nil, fmt.Errorf("failed to add or replace entry in glossary: %w", err)
+	}
+	return &glossaryImport, nil
+}
+
+func (g *GlossariesService) DeleteEntry(id string, term *GlossaryTerm, guid *string) (*GlossaryImport, error) {
+	body := map[string]interface{}{}
+	if term != nil {
+		body["term"] = term
+	}
+	if guid != nil {
+		body["guid"] = *guid
+	}
+
+	var glossaryImport GlossaryImport
+	err := g.client.Delete(fmt.Sprintf("/v2/glossaries/%s/content", id), body, nil, &glossaryImport)
+	if err != nil {
+		return nil, fmt.Errorf("failed to delete entry from glossary: %w", err)
+	}
+	return &glossaryImport, nil
 }

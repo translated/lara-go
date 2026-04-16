@@ -30,7 +30,7 @@ func (d *DocumentsService) UploadWithOptions(filePath, filename, source *string,
 		URL    string         `json:"url"`
 		Fields s3UploadFields `json:"fields"`
 	}
-	err := d.client.Get("/documents/upload-url", params, nil, &uploadResponse)
+	err := d.client.Get("/v2/documents/upload-url", params, nil, &uploadResponse)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get upload URL: %w", err)
 	}
@@ -75,7 +75,7 @@ func (d *DocumentsService) UploadWithOptions(filePath, filename, source *string,
 	}
 
 	var document Document
-	err = d.client.Post("/documents", body, nil, headers, &document)
+	err = d.client.Post("/v2/documents", body, nil, headers, &document)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create document: %w", err)
 	}
@@ -85,7 +85,7 @@ func (d *DocumentsService) UploadWithOptions(filePath, filename, source *string,
 
 func (d *DocumentsService) Status(id string) (*Document, error) {
 	var document Document
-	err := d.client.Get(fmt.Sprintf("/documents/%s", id), nil, nil, &document)
+	err := d.client.Get(fmt.Sprintf("/v2/documents/%s", id), nil, nil, &document)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get document status: %w", err)
 	}
@@ -106,7 +106,7 @@ func (d *DocumentsService) DownloadWithOptions(id string, options *DocumentDownl
 	var downloadResponse struct {
 		URL string `json:"url"`
 	}
-	err := d.client.Get(fmt.Sprintf("/documents/%s/download-url", id), params, nil, &downloadResponse)
+	err := d.client.Get(fmt.Sprintf("/v2/documents/%s/download-url", id), params, nil, &downloadResponse)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get download URL: %w", err)
 	}

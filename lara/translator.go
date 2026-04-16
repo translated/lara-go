@@ -12,9 +12,11 @@ type Translator struct {
 	Glossaries *GlossariesService
 }
 
-func NewTranslator(credentials *Credentials, options *TranslatorOptions) *Translator {
-	if credentials == nil {
-		credentials = NewCredentials("", "")
+// NewTranslator creates a new Translator with any supported authentication method.
+// Accepts *Credentials (deprecated), *AccessKey, *UserCredentials, or *AuthToken.
+func NewTranslator(auth interface{}, options *TranslatorOptions) *Translator {
+	if auth == nil {
+		auth = NewCredentials("", "")
 	}
 
 	serverURL := "https://api.laratranslate.com"
@@ -22,7 +24,7 @@ func NewTranslator(credentials *Credentials, options *TranslatorOptions) *Transl
 		serverURL = options.ServerURL
 	}
 
-	client := newClient(credentials.accessKeyID, credentials.accessKeySecret, serverURL)
+	client := newClient(auth, serverURL)
 
 	s3Client := newS3Client()
 
@@ -168,7 +170,7 @@ func (t *Translator) Translate(text interface{}, source string, target string, o
 		headers["X-No-Trace"] = "true"
 	}
 
-	// Use streaming if callback is provided
+	// Always use streaming; callback only invoked when reasoning is enabled
 	var lastResult *TextResult
 	err := t.client.PostAndGetStream("/translate", body, headers, func(contentBytes []byte) error {
 		var result TextResult
@@ -199,7 +201,7 @@ func (t *Translator) Translate(text interface{}, source string, target string, o
 
 func (t *Translator) Languages() ([]string, error) {
 	var languages []string
-	err := t.client.Get("/languages", nil, nil, &languages)
+	err := t.client.Get("/v2/languages", nil, nil, &languages)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get languages: %w", err)
 	}
@@ -221,7 +223,7 @@ func (t *Translator) Detect(text interface{}, hint string, passlist []string) (*
 	}
 
 	var result DetectResult
-	err := t.client.Post("/detect", body, nil, nil, &result)
+	err := t.client.Post("/v2/detect", body, nil, nil, &result)
 	if err != nil {
 		return nil, fmt.Errorf("failed to detect language: %w", err)
 	}

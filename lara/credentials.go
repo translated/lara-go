@@ -1,13 +1,15 @@
 package lara
 
+// Credentials is deprecated. Use AccessKey instead.
+// Deprecated: Use AccessKey instead.
 type Credentials struct {
-	accessKeyID     string
-	accessKeySecret string
+	*AccessKey
 }
 
+// NewCredentials creates a new Credentials (deprecated).
+// Deprecated: Use NewAccessKey instead.
 func NewCredentials(accessKeyID, accessKeySecret string) *Credentials {
 	return &Credentials{
-		accessKeyID:     accessKeyID,
-		accessKeySecret: accessKeySecret,
+		AccessKey: NewAccessKey(accessKeyID, accessKeySecret),
 	}
 }

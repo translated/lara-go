@@ -39,6 +39,11 @@ type GlossaryCounts struct {
 	Multidirectional int            `json:"multidirectional"`
 }
 
+type GlossaryTerm struct {
+	Language string `json:"language"`
+	Value    string `json:"value"`
+}
+
 type DocumentStatus string
 
 const (
