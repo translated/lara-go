@@ -142,3 +142,56 @@ type DetectResult struct {
 	ContentType string             `json:"content_type"`
 	Predictions []DetectPrediction `json:"predictions"`
 }
+
+// VoiceGender represents the gender of the voice for audio translation
+type VoiceGender string
+
+const (
+	VoiceGenderMale   VoiceGender = "male"
+	VoiceGenderFemale VoiceGender = "female"
+)
+
+// AudioStatus is an alias for DocumentStatus (same statuses used)
+type AudioStatus = DocumentStatus
+
+// Audio status constants (aliases for DocumentStatus constants)
+const (
+	AudioStatusInitialized = DocumentStatusInitialized
+	AudioStatusAnalyzing   = DocumentStatusAnalyzing
+	AudioStatusPaused      = DocumentStatusPaused
+	AudioStatusReady       = DocumentStatusReady
+	AudioStatusTranslating = DocumentStatusTranslating
+	AudioStatusTranslated  = DocumentStatusTranslated
+	AudioStatusError       = DocumentStatusError
+)
+
+// Audio represents an audio translation job
+type Audio struct {
+	ID                string        `json:"id"`
+	Status            AudioStatus   `json:"status"`
+	Source            *string       `json:"source,omitempty"`
+	Target            string        `json:"target"`
+	Filename          string        `json:"filename"`
+	CreatedAt         time.Time     `json:"created_at"`
+	UpdatedAt         time.Time     `json:"updated_at"`
+	Options           *AudioOptions `json:"options,omitempty"`
+	TranslatedSeconds *float64      `json:"translated_seconds,omitempty"`
+	TotalSeconds      *float64      `json:"total_seconds,omitempty"`
+	ErrorReason       *string       `json:"error_reason,omitempty"`
+}
+
+type AudioOptions struct {
+	AdaptTo     []string         `json:"adapt_to,omitempty"`
+	Glossaries  []string         `json:"glossaries,omitempty"`
+	Style       TranslationStyle `json:"style,omitempty"`
+	NoTrace     *bool            `json:"no_trace,omitempty"`
+	VoiceGender VoiceGender      `json:"voice_gender,omitempty"`
+}
+
+type AudioUploadOptions struct {
+	AdaptTo     []string
+	Glossaries  []string
+	Style       TranslationStyle
+	NoTrace     *bool
+	VoiceGender VoiceGender
+}

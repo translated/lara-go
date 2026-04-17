@@ -12,6 +12,7 @@ All major translation features are accessible, making it easy to integrate and c
 - **Document Translation**: Word, PDF, and other document formats with status monitoring
 - **Translation Memory**: Store and reuse translations for consistency
 - **Glossaries**: Enforce terminology standards across translations
+- **Audio Translation**: Translate audio files with status monitoring
 - **Language Detection**: Automatic source language identification
 - **Advanced Options**: Translation instructions and more
 
@@ -121,6 +122,17 @@ go run memories_management.go
 ```bash
 cd examples
 go run glossaries_management.go
+```
+
+### Audio Translation
+- **[audio_translation.go](examples/audio_translation.go)** - Audio translation examples
+  - Basic audio translation
+  - Advanced options with memories and glossaries
+  - Step-by-step audio translation with status monitoring
+
+```bash
+cd examples
+go run audio_translation.go
 ```
 
 ### Language Detection
@@ -255,6 +267,40 @@ status, err := laraTranslator.Documents.Status(document.ID)
 #### Download translated document
 ```go
 reader, err := laraTranslator.Documents.Download(document.ID)
+```
+
+### 🎵 Audio Translation
+#### Simple audio translation
+
+```go
+filePath := "/path/to/your/audio.mp3"
+filename := "audio.mp3"
+source := "en-US"
+target := "fr-FR"
+reader, err := laraTranslator.Audio.Translate(&filePath, &filename, &source, target)
+```
+
+#### Audio translation with options
+
+```go
+options := &lara.AudioUploadOptions{
+    AdaptTo:    []string{"mem_1A2b3C4d5E6f7G8h9I0jKl"},  // Replace with actual memory IDs
+    Glossaries: []string{"gls_1A2b3C4d5E6f7G8h9I0jKl"},  // Replace with actual glossary IDs
+}
+reader, err := laraTranslator.Audio.TranslateWithOptions(&filePath, &filename, &source, target, options)
+```
+
+#### Step-by-step audio translation
+
+```go
+// Upload
+audio, err := laraTranslator.Audio.Upload(&filePath, &filename, &source, target)
+
+// Check status
+status, err := laraTranslator.Audio.Status(audio.ID)
+
+// Download translated audio
+reader, err := laraTranslator.Audio.Download(audio.ID)
 ```
 
 ### 🧠 Memory Management

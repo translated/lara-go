@@ -10,6 +10,7 @@ type Translator struct {
 	Documents  *DocumentsService
 	Memories   *MemoriesService
 	Glossaries *GlossariesService
+	Audio      *AudioTranslator
 }
 
 // NewTranslator creates a new Translator with any supported authentication method.
@@ -33,6 +34,7 @@ func NewTranslator(auth interface{}, options *TranslatorOptions) *Translator {
 		Documents:  &DocumentsService{client: client, s3Client: s3Client},
 		Memories:   newMemoriesService(client),
 		Glossaries: newGlossariesService(client),
+		Audio:      newAudioTranslator(client, s3Client),
 	}
 }
 
