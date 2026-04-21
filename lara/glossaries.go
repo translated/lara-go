@@ -2,7 +2,6 @@ package lara
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"strings"
 	"time"
@@ -96,7 +95,7 @@ func (g *GlossariesService) ImportCsv(id string, csv *os.File) (*GlossaryImport,
 		body["compression"] = "gzip"
 	}
 
-	files := map[string]io.Reader{
+	files := map[string]*os.File{
 		"csv": csv,
 	}
 

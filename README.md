@@ -13,6 +13,7 @@ All major translation features are accessible, making it easy to integrate and c
 - **Translation Memory**: Store and reuse translations for consistency
 - **Glossaries**: Enforce terminology standards across translations
 - **Audio Translation**: Translate audio files with status monitoring
+- **Image Translation**: Translate whole images or extract and translate text blocks
 - **Language Detection**: Automatic source language identification
 - **Advanced Options**: Translation instructions and more
 
@@ -133,6 +134,17 @@ go run glossaries_management.go
 ```bash
 cd examples
 go run audio_translation.go
+```
+
+### Image Translation
+- **[image_translation.go](examples/image_translation.go)** - Image translation examples
+  - Basic image translation
+  - Advanced options with memories and glossaries
+  - Extract and translate text from an image
+
+```bash
+cd examples
+go run image_translation.go
 ```
 
 ### Language Detection
@@ -301,6 +313,20 @@ status, err := laraTranslator.Audio.Status(audio.ID)
 
 // Download translated audio
 reader, err := laraTranslator.Audio.Download(audio.ID)
+```
+
+### 🖼️ Image Translation
+
+```go
+filePath := "/path/to/your/image.png"  // Replace with actual file path
+source := "en-US"
+target := "fr-FR"
+
+// Translate image and receive the translated image bytes
+imageBytes, err := laraTranslator.Images.Translate(&filePath, &source, target)
+
+// Extract and translate text blocks from an image
+result, err := laraTranslator.Images.TranslateText(&filePath, &source, target)
 ```
 
 ### 🧠 Memory Management

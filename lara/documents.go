@@ -11,6 +11,13 @@ type DocumentsService struct {
 	s3Client *S3Client
 }
 
+func newDocumentsService(client *Client, s3Client *S3Client) *DocumentsService {
+	return &DocumentsService{
+		client:   client,
+		s3Client: s3Client,
+	}
+}
+
 func (d *DocumentsService) Upload(filePath, filename, source *string, target string) (*Document, error) {
 	options := &DocumentUploadOptions{}
 	return d.UploadWithOptions(filePath, filename, source, target, options)

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"time"
 
 	"github.com/translated/lara-go/lara"
 )
@@ -75,10 +76,12 @@ func main() {
 	noTrace := true
 	translationOptions := &lara.DocumentTranslateOptions{
 		DocumentUploadOptions: lara.DocumentUploadOptions{
-			AdaptTo:    []string{"mem_1A2b3C4d5E6f7G8h9I0jKl"}, // Replace with actual memory IDs
-			Glossaries: []string{"gls_1A2b3C4d5E6f7G8h9I0jKl"}, // Replace with actual glossary IDs
-			Style:      lara.TranslationStyleFluid,
-			NoTrace:    &noTrace,
+			DocumentOptions: lara.DocumentOptions{
+				AdaptTo:    []string{"mem_1A2b3C4d5E6f7G8h9I0jKl"}, // Replace with actual memory IDs
+				Glossaries: []string{"gls_1A2b3C4d5E6f7G8h9I0jKl"}, // Replace with actual glossary IDs
+				Style:      lara.TranslationStyleFluid,
+				NoTrace:    &noTrace,
+			},
 		},
 	}
 
@@ -112,9 +115,11 @@ func main() {
 	// Upload document
 	fmt.Println("Step 1: Uploading document...")
 	uploadOptions := &lara.DocumentUploadOptions{
-		AdaptTo:    []string{"mem_1A2b3C4d5E6f7G8h9I0jKl"}, // Replace with actual memory IDs
-		Glossaries: []string{"gls_1A2b3C4d5E6f7G8h9I0jKl"}, // Replace with actual glossary IDs
-		Style:      lara.TranslationStyleFluid,
+		DocumentOptions: lara.DocumentOptions{
+			AdaptTo:    []string{"mem_1A2b3C4d5E6f7G8h9I0jKl"}, // Replace with actual memory IDs
+			Glossaries: []string{"gls_1A2b3C4d5E6f7G8h9I0jKl"}, // Replace with actual glossary IDs
+			Style:      lara.TranslationStyleFluid,
+		},
 	}
 
 	document, err := translator.Documents.UploadWithOptions(&sampleFilePath, &sampleFileName, &sourceLang, targetLang, uploadOptions)
@@ -134,8 +139,24 @@ func main() {
 	}
 	fmt.Printf("Current status: %s\n", updatedDocument.Status)
 
+	// Wait for completion
+	for updatedDocument.Status != lara.DocumentStatusTranslated && updatedDocument.Status != lara.DocumentStatusError {
+		time.Sleep(2 * time.Second)
+		updatedDocument, err = translator.Documents.Status(document.ID)
+		if err != nil {
+			fmt.Printf("Error in step-by-step process: %v", err)
+			return
+		}
+	}
+	fmt.Printf("Final status: %s\n", updatedDocument.Status)
+
+	if updatedDocument.Status == lara.DocumentStatusError {
+		fmt.Printf("Error in step-by-step process: %s", *updatedDocument.ErrorReason)
+		return
+	}
+
 	// Download translated document
-	fmt.Println("\nStep 3: Downloading would happen after translation completes...")
+	fmt.Println("\nStep 3: Downloading translated document...")
 	downloadedContent, err := translator.Documents.Download(document.ID)
 	if err != nil {
 		fmt.Printf("Error in step-by-step process: %v", err)

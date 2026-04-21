@@ -137,6 +137,12 @@ func main() {
 			return
 		}
 	}
+	log.Printf("Final status: %s\n", updatedAudio.Status)
+
+	if updatedAudio.Status == lara.AudioStatusError {
+		log.Printf("Audio translation failed: %s\n", *updatedAudio.ErrorReason)
+		return
+	}
 
 	// Step 3: Download translated audio
 	fmt.Println("\nStep 3: Downloading translated audio...")

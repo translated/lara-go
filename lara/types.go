@@ -231,3 +231,41 @@ type AudioUploadOptions struct {
 	NoTrace     *bool
 	VoiceGender VoiceGender
 }
+
+// TextRemoval represents the text removal mode for image translation
+type TextRemoval string
+
+const (
+	TextRemovalOverlay    TextRemoval = "overlay"
+	TextRemovalInpainting TextRemoval = "inpainting"
+)
+
+type ImageTranslateOptions struct {
+	AdaptTo     []string
+	Glossaries  []string
+	Style       TranslationStyle
+	TextRemoval TextRemoval
+	NoTrace     *bool
+}
+
+type ImageTextTranslateOptions struct {
+	AdaptTo    []string
+	Glossaries []string
+	Style      TranslationStyle
+	NoTrace    *bool
+	Verbose    *bool
+}
+
+type ImageParagraph struct {
+	Text              string            `json:"text"`
+	Translation       string            `json:"translation"`
+	AdaptedToMatches  []NGMemoryMatch   `json:"adapted_to_matches,omitempty"`
+	GlossariesMatches []NGGlossaryMatch `json:"glossaries_matches,omitempty"`
+}
+
+type ImageTextResult struct {
+	SourceLanguage string           `json:"source_language"`
+	AdaptedTo      []string         `json:"adapted_to,omitempty"`
+	Glossaries     []string         `json:"glossaries,omitempty"`
+	Paragraphs     []ImageParagraph `json:"paragraphs"`
+}

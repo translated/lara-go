@@ -11,6 +11,7 @@ type Translator struct {
 	Memories   *MemoriesService
 	Glossaries *GlossariesService
 	Audio      *AudioTranslator
+	Images     *ImagesService
 }
 
 type TranslatorOptions struct {
@@ -35,10 +36,11 @@ func NewTranslator(auth interface{}, options *TranslatorOptions) *Translator {
 
 	return &Translator{
 		client:     client,
-		Documents:  &DocumentsService{client: client, s3Client: s3Client},
+		Documents:  newDocumentsService(client, s3Client),
 		Memories:   newMemoriesService(client),
 		Glossaries: newGlossariesService(client),
 		Audio:      newAudioTranslator(client, s3Client),
+		Images:     newImagesService(client),
 	}
 }
 

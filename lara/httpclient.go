@@ -10,9 +10,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"mime"
 	"mime/multipart"
 	"net/http"
+	"net/textproto"
 	"net/url"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -215,11 +219,11 @@ func (c *Client) refreshOrReauthenticate() error {
 	return fmt.Errorf("no authentication method available for token renewal")
 }
 
-func (c *Client) request(method, path string, params map[string]string, body interface{}, files map[string]io.Reader, headers map[string]string) ([]byte, error) {
+func (c *Client) request(method, path string, params map[string]string, body interface{}, files map[string]*os.File, headers map[string]string) ([]byte, error) {
 	return c.doRequest(method, path, params, body, files, headers, 0)
 }
 
-func (c *Client) doRequest(method, path string, params map[string]string, body interface{}, files map[string]io.Reader, headers map[string]string, retryCount int) ([]byte, error) {
+func (c *Client) doRequest(method, path string, params map[string]string, body interface{}, files map[string]*os.File, headers map[string]string, retryCount int) ([]byte, error) {
 	if !strings.HasPrefix(path, "/") {
 		path = "/" + path
 	}
@@ -240,21 +244,44 @@ func (c *Client) doRequest(method, path string, params map[string]string, body i
 		// Multipart form
 		var b bytes.Buffer
 		w := multipart.NewWriter(&b)
-		for field, r := range files {
-			fw, err := w.CreateFormFile(field, field)
+		for field, f := range files {
+			filename := filepath.Base(f.Name())
+			mimeType := mime.TypeByExtension(filepath.Ext(filename))
+			if mimeType == "" {
+				mimeType = "application/octet-stream"
+			}
+
+			h := make(textproto.MIMEHeader)
+			h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`, field, filename))
+			h.Set("Content-Type", mimeType)
+
+			fw, err := w.CreatePart(h)
 			if err != nil {
 				return nil, fmt.Errorf("failed to create form file: %w", err)
 			}
-			if _, err := io.Copy(fw, r); err != nil {
+			if _, err := io.Copy(fw, f); err != nil {
 				return nil, fmt.Errorf("failed to copy file data: %w", err)
 			}
 		}
 		if body != nil {
-			jsonBytes, err := json.Marshal(body)
-			if err != nil {
-				return nil, fmt.Errorf("failed to marshal body for multipart: %w", err)
+			if bodyMap, ok := body.(map[string]interface{}); ok {
+				for key, value := range bodyMap {
+					switch v := value.(type) {
+					case string:
+						_ = w.WriteField(key, v)
+					default:
+						jsonBytes, err := json.Marshal(v)
+						if err != nil {
+							return nil, fmt.Errorf("failed to marshal field %s: %w", key, err)
+						}
+						_ = w.WriteField(key, string(jsonBytes))
+					}
+				}
+			} else if bodyMap, ok := body.(map[string]string); ok {
+				for key, value := range bodyMap {
+					_ = w.WriteField(key, value)
+				}
 			}
-			_ = w.WriteField("json", string(jsonBytes))
 		}
 		w.Close()
 		bodyBytes := b.Bytes()
@@ -443,7 +470,7 @@ func (c *Client) Get(path string, params map[string]string, headers map[string]s
 	return c.handleContent(respBytes, result)
 }
 
-func (c *Client) Post(path string, body interface{}, files map[string]io.Reader, headers map[string]string, result interface{}) error {
+func (c *Client) Post(path string, body interface{}, files map[string]*os.File, headers map[string]string, result interface{}) error {
 	respBytes, err := c.request("POST", path, nil, body, files, headers)
 	if err != nil {
 		return err
@@ -451,7 +478,7 @@ func (c *Client) Post(path string, body interface{}, files map[string]io.Reader,
 	return c.handleContent(respBytes, result)
 }
 
-func (c *Client) Put(path string, body interface{}, files map[string]io.Reader, headers map[string]string, result interface{}) error {
+func (c *Client) Put(path string, body interface{}, files map[string]*os.File, headers map[string]string, result interface{}) error {
 	respBytes, err := c.request("PUT", path, nil, body, files, headers)
 	if err != nil {
 		return err
@@ -465,6 +492,10 @@ func (c *Client) Delete(path string, body interface{}, headers map[string]string
 		return err
 	}
 	return c.handleContent(respBytes, result)
+}
+
+func (c *Client) PostRaw(path string, body interface{}, files map[string]*os.File, headers map[string]string) ([]byte, error) {
+	return c.request("POST", path, nil, body, files, headers)
 }
 
 func (c *Client) GetRaw(path string, params map[string]string, headers map[string]string) ([]byte, error) {

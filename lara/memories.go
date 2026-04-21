@@ -2,7 +2,6 @@ package lara
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"strings"
 	"time"
@@ -130,7 +129,7 @@ func (m *MemoriesService) ImportTmx(id string, tmx *os.File) (*MemoryImport, err
 		body["compression"] = "gzip"
 	}
 
-	files := map[string]io.Reader{
+	files := map[string]*os.File{
 		"tmx": tmx,
 	}
 
