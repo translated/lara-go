@@ -13,6 +13,10 @@ type Translator struct {
 	Audio      *AudioTranslator
 }
 
+type TranslatorOptions struct {
+	ServerURL string
+}
+
 // NewTranslator creates a new Translator with any supported authentication method.
 // Accepts *Credentials (deprecated), *AccessKey, *UserCredentials, or *AuthToken.
 func NewTranslator(auth interface{}, options *TranslatorOptions) *Translator {
@@ -38,36 +42,6 @@ func NewTranslator(auth interface{}, options *TranslatorOptions) *Translator {
 	}
 }
 
-type TranslateOptions struct {
-	AdaptTo      []string
-	Glossaries   []string
-	Instructions []string
-	ContentType  string
-	Multiline    *bool
-	TimeoutMs    int
-	Priority     string
-	UseCache     *bool
-	CacheTTL     *int
-	SourceHint   string
-	NoTrace      *bool
-	Verbose      *bool
-	Style        TranslationStyle
-	Reasoning    *bool
-	Headers      map[string]interface{}
-	Callback     func(*TextResult) error
-}
-
-type DetectOptions struct {
-	Hint     string
-	Passlist []string
-}
-
-type Translation struct {
-	String     *string
-	Strings    []string
-	TextBlocks []TextBlock
-}
-
 // Auto-called by Go's json package during unmarshaling
 func (t *Translation) UnmarshalJSON(data []byte) error {
 	var singleString string
@@ -88,16 +62,6 @@ func (t *Translation) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 	return fmt.Errorf("translation: unsupported data type")
-}
-
-type TextResult struct {
-	ContentType       string              `json:"content_type"`
-	SourceLanguage    string              `json:"source_language"`
-	Translation       Translation         `json:"translation"` // Custom UnmarshalJSON method is automatically called when unmarshaling this field
-	AdaptedTo         []string            `json:"adapted_to,omitempty"`
-	Glossaries        []string            `json:"glossaries,omitempty"`
-	AdaptedToMatches  [][]NGMemoryMatch   `json:"adapted_to_matches,omitempty"`
-	GlossariesMatches [][]NGGlossaryMatch `json:"glossaries_matches,omitempty"`
 }
 
 func (t *Translator) Translate(text interface{}, source string, target string, opts TranslateOptions) (*TextResult, error) {

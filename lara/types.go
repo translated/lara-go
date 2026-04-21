@@ -87,6 +87,11 @@ type DocumentUploadOptions struct {
 	Password         *string                  `json:"password,omitempty"`
 }
 
+type DocumentTranslateOptions struct {
+	DocumentUploadOptions
+	DocumentDownloadOptions
+}
+
 type DocxExtractionParams struct {
 	ExtractComments *bool `json:"extract_comments,omitempty"`
 	AcceptRevisions *bool `json:"accept_revisions,omitempty"`
@@ -120,8 +125,39 @@ type NGGlossaryMatch struct {
 	Translation string    `json:"translation"`
 }
 
-type TranslatorOptions struct {
-	ServerURL string
+type TranslateOptions struct {
+	AdaptTo      []string
+	Glossaries   []string
+	Instructions []string
+	ContentType  string
+	Multiline    *bool
+	TimeoutMs    int
+	Priority     string
+	UseCache     *bool
+	CacheTTL     *int
+	SourceHint   string
+	NoTrace      *bool
+	Verbose      *bool
+	Style        TranslationStyle
+	Reasoning    *bool
+	Headers      map[string]interface{}
+	Callback     func(*TextResult) error
+}
+
+type Translation struct {
+	String     *string
+	Strings    []string
+	TextBlocks []TextBlock
+}
+
+type TextResult struct {
+	ContentType       string              `json:"content_type"`
+	SourceLanguage    string              `json:"source_language"`
+	Translation       Translation         `json:"translation"`
+	AdaptedTo         []string            `json:"adapted_to,omitempty"`
+	Glossaries        []string            `json:"glossaries,omitempty"`
+	AdaptedToMatches  [][]NGMemoryMatch   `json:"adapted_to_matches,omitempty"`
+	GlossariesMatches [][]NGGlossaryMatch `json:"glossaries_matches,omitempty"`
 }
 
 type TranslationStyle string

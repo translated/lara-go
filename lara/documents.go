@@ -11,11 +11,6 @@ type DocumentsService struct {
 	s3Client *S3Client
 }
 
-type DocumentTranslateOptions struct {
-	DocumentUploadOptions
-	DocumentDownloadOptions
-}
-
 func (d *DocumentsService) Upload(filePath, filename, source *string, target string) (*Document, error) {
 	options := &DocumentUploadOptions{}
 	return d.UploadWithOptions(filePath, filename, source, target, options)
