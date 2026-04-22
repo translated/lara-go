@@ -191,9 +191,25 @@ func (t *Translator) Detect(text interface{}, hint string, passlist []string) (*
 	}
 
 	var result DetectResult
-	err := t.client.Post("/v2/detect", body, nil, nil, &result)
+	err := t.client.Post("/v2/detect/language", body, nil, nil, &result)
 	if err != nil {
 		return nil, fmt.Errorf("failed to detect language: %w", err)
+	}
+
+	return &result, nil
+}
+
+func (t *Translator) DetectProfanities(text string, language string, contentType string) (*ProfanityDetectResult, error) {
+	body := map[string]interface{}{
+		"text":         text,
+		"language":     language,
+		"content_type": contentType,
+	}
+
+	var result ProfanityDetectResult
+	err := t.client.Post("/v2/detect/profanities", body, nil, nil, &result)
+	if err != nil {
+		return nil, fmt.Errorf("failed to detect profanities: %w", err)
 	}
 
 	return &result, nil

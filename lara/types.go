@@ -232,6 +232,18 @@ type AudioUploadOptions struct {
 	VoiceGender VoiceGender
 }
 
+type Profanity struct {
+	Text           string  `json:"text"`
+	StartCharIndex int     `json:"start_char_index"`
+	EndCharIndex   int     `json:"end_char_index"`
+	Score          float64 `json:"score"`
+}
+
+type ProfanityDetectResult struct {
+	MaskedText  string      `json:"masked_text"`
+	Profanities []Profanity `json:"profanities"`
+}
+
 // TextRemoval represents the text removal mode for image translation
 type TextRemoval string
 
