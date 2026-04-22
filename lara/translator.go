@@ -44,6 +44,7 @@ func NewTranslator(auth interface{}, options *TranslatorOptions) *Translator {
 	}
 }
 
+
 // Auto-called by Go's json package during unmarshaling
 func (t *Translation) UnmarshalJSON(data []byte) error {
 	var singleString string
@@ -123,6 +124,9 @@ func (t *Translator) Translate(text interface{}, source string, target string, o
 	}
 	if opts.Reasoning != nil {
 		body["reasoning"] = *opts.Reasoning
+	}
+	if opts.Metadata != nil {
+		body["metadata"] = opts.Metadata
 	}
 
 	headers := make(map[string]string)

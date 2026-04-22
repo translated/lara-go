@@ -138,10 +138,11 @@ type TranslateOptions struct {
 	SourceHint   string
 	NoTrace      *bool
 	Verbose      *bool
-	Style        TranslationStyle
-	Reasoning    *bool
-	Headers      map[string]interface{}
-	Callback     func(*TextResult) error
+	Style     TranslationStyle
+	Reasoning *bool
+	Metadata  interface{}
+	Headers   map[string]interface{}
+	Callback  func(*TextResult) error
 }
 
 type Translation struct {
