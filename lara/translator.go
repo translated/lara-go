@@ -10,8 +10,9 @@ type Translator struct {
 	Documents  *DocumentsService
 	Memories   *MemoriesService
 	Glossaries *GlossariesService
-	Audio      *AudioTranslator
-	Images     *ImagesService
+	Audio       *AudioTranslator
+	Images      *ImagesService
+	Styleguides *StyleguidesService
 }
 
 type TranslatorOptions struct {
@@ -39,8 +40,9 @@ func NewTranslator(auth interface{}, options *TranslatorOptions) *Translator {
 		Documents:  newDocumentsService(client, s3Client),
 		Memories:   newMemoriesService(client),
 		Glossaries: newGlossariesService(client),
-		Audio:      newAudioTranslator(client, s3Client),
-		Images:     newImagesService(client),
+		Audio:       newAudioTranslator(client, s3Client),
+		Images:      newImagesService(client),
+		Styleguides: newStyleguidesService(client),
 	}
 }
 
@@ -66,6 +68,8 @@ func (t *Translation) UnmarshalJSON(data []byte) error {
 	}
 	return fmt.Errorf("translation: unsupported data type")
 }
+
+
 
 func (t *Translator) Translate(text interface{}, source string, target string, opts TranslateOptions) (*TextResult, error) {
 	body := make(map[string]interface{})
@@ -127,6 +131,15 @@ func (t *Translator) Translate(text interface{}, source string, target string, o
 	}
 	if opts.Metadata != nil {
 		body["metadata"] = opts.Metadata
+	}
+	if opts.StyleguideID != "" {
+		body["styleguide_id"] = opts.StyleguideID
+	}
+	if opts.StyleguideReasoning != nil {
+		body["styleguide_reasoning"] = *opts.StyleguideReasoning
+	}
+	if opts.StyleguideExplanationLanguage != "" {
+		body["styleguide_explanation_language"] = opts.StyleguideExplanationLanguage
 	}
 
 	headers := make(map[string]string)

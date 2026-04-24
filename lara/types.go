@@ -172,6 +172,27 @@ func (g *NGGlossaryMatchGroups) UnmarshalJSON(data []byte) error {
 	return fmt.Errorf("glossaries_matches: unsupported data type")
 }
 
+type Styleguide struct {
+	ID        string    `json:"id"`
+	Name      string    `json:"name"`
+	Content   *string   `json:"content,omitempty"`
+	OwnerID   string    `json:"owner_id"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type StyleguideChange struct {
+	ID                  *string `json:"id,omitempty"`
+	OriginalTranslation string  `json:"original_translation"`
+	RefinedTranslation  string  `json:"refined_translation"`
+	Explanation         string  `json:"explanation"`
+}
+
+type StyleguideResults struct {
+	OriginalTranslation Translation        `json:"original_translation"`
+	Changes             []StyleguideChange `json:"changes"`
+}
+
 type TranslateOptions struct {
 	AdaptTo      []string
 	Glossaries   []string
@@ -188,6 +209,9 @@ type TranslateOptions struct {
 	Style     TranslationStyle
 	Reasoning *bool
 	Metadata  interface{}
+	StyleguideID                  string
+	StyleguideReasoning           *bool
+	StyleguideExplanationLanguage string
 	Headers   map[string]interface{}
 	Callback  func(*TextResult) error
 }
@@ -206,6 +230,7 @@ type TextResult struct {
 	Glossaries        []string            `json:"glossaries,omitempty"`
 	AdaptedToMatches  NGMemoryMatchGroups   `json:"adapted_to_matches,omitempty"`
 	GlossariesMatches NGGlossaryMatchGroups `json:"glossaries_matches,omitempty"`
+	StyleguideResults *StyleguideResults  `json:"styleguide_results,omitempty"`
 }
 
 type TranslationStyle string
