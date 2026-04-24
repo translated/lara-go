@@ -19,6 +19,8 @@ import (
  * - Glossary export
  * - Glossary terms count
  * - Import status checking
+ * - Add or replace glossary entries
+ * - Delete glossary entries
  */
 
 func main() {
@@ -172,6 +174,64 @@ func main() {
 			}
 		}
 		fmt.Printf("   Total entries: %d\n", totalEntries)
+		fmt.Println()
+
+		// Example 6: Add or replace glossary entries
+		fmt.Println("=== Add or Replace Glossary Entries ===")
+
+		terms := []lara.GlossaryTerm{
+			{Language: "en-US", Value: "computer"},
+			{Language: "it-IT", Value: "computer"},
+		}
+		addResult, err := laraTranslator.Glossaries.AddOrReplaceEntry(glossary.ID, terms, nil)
+		if err != nil {
+			log.Printf("Error adding/replacing entry: %v", err)
+		} else {
+			fmt.Printf("✅ Entry added/replaced (import ID: %s)\n", addResult.ID)
+		}
+
+		customGUID := "custom-guid-123"
+		termsWithGUID := []lara.GlossaryTerm{
+			{Language: "en-US", Value: "keyboard"},
+			{Language: "it-IT", Value: "tastiera"},
+		}
+		addWithGUIDResult, err := laraTranslator.Glossaries.AddOrReplaceEntry(glossary.ID, termsWithGUID, &customGUID)
+		if err != nil {
+			log.Printf("Error adding entry with GUID: %v", err)
+		} else {
+			fmt.Printf("✅ Entry added with GUID (import ID: %s)\n", addWithGUIDResult.ID)
+		}
+
+		updatedTerms := []lara.GlossaryTerm{
+			{Language: "en-US", Value: "keyboard"},
+			{Language: "it-IT", Value: "tastiera"},
+			{Language: "fr-FR", Value: "clavier"},
+		}
+		replaceResult, err := laraTranslator.Glossaries.AddOrReplaceEntry(glossary.ID, updatedTerms, &customGUID)
+		if err != nil {
+			log.Printf("Error replacing entry: %v", err)
+		} else {
+			fmt.Printf("✅ Entry replaced with updated terms (import ID: %s)\n", replaceResult.ID)
+		}
+		fmt.Println()
+
+		// Example 7: Delete glossary entries
+		fmt.Println("=== Delete Glossary Entries ===")
+
+		deleteByGUIDResult, err := laraTranslator.Glossaries.DeleteEntry(glossary.ID, nil, &customGUID)
+		if err != nil {
+			log.Printf("Error deleting entry by GUID: %v", err)
+		} else {
+			fmt.Printf("✅ Entry deleted by GUID (import ID: %s)\n", deleteByGUIDResult.ID)
+		}
+
+		term := &lara.GlossaryTerm{Language: "en-US", Value: "computer"}
+		deleteByTermResult, err := laraTranslator.Glossaries.DeleteEntry(glossary.ID, term, nil)
+		if err != nil {
+			log.Printf("Error deleting entry by term: %v", err)
+		} else {
+			fmt.Printf("✅ Entry deleted by term: %s -> \"%s\" (import ID: %s)\n", term.Language, term.Value, deleteByTermResult.ID)
+		}
 		fmt.Println()
 
 		return nil

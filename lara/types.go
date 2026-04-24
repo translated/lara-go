@@ -43,6 +43,13 @@ type GlossaryCounts struct {
 	Multidirectional int            `json:"multidirectional"`
 }
 
+type GlossaryFileFormat string
+
+const (
+	GlossaryFileFormatCsvTableUni   GlossaryFileFormat = "csv/table-uni"
+	GlossaryFileFormatCsvTableMulti GlossaryFileFormat = "csv/table-multi"
+)
+
 type GlossaryTerm struct {
 	Language string `json:"language"`
 	Value    string `json:"value"`

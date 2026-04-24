@@ -76,21 +76,31 @@ func (g *GlossariesService) Update(id, name string) (*Glossary, error) {
 }
 
 func (g *GlossariesService) ImportCsvFromPath(id string, csvPath string) (*GlossaryImport, error) {
+	return g.ImportCsvFromPathWithFormat(id, csvPath, GlossaryFileFormatCsvTableUni)
+}
+
+func (g *GlossariesService) ImportCsvFromPathWithFormat(id string, csvPath string, contentType GlossaryFileFormat) (*GlossaryImport, error) {
 	file, err := os.Open(csvPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open CSV file: %w", err)
 	}
 	defer file.Close()
 
-	return g.ImportCsv(id, file)
+	return g.ImportCsvWithFormat(id, file, contentType)
 }
 
 func (g *GlossariesService) ImportCsv(id string, csv *os.File) (*GlossaryImport, error) {
+	return g.ImportCsvWithFormat(id, csv, GlossaryFileFormatCsvTableUni)
+}
+
+func (g *GlossariesService) ImportCsvWithFormat(id string, csv *os.File, contentType GlossaryFileFormat) (*GlossaryImport, error) {
 	// Auto-detect gzip compression based on filename (like Java SDK)
 	fileName := csv.Name()
 	isGzipped := strings.HasSuffix(strings.ToLower(fileName), ".gz")
 
-	body := map[string]interface{}{}
+	body := map[string]interface{}{
+		"content_type": string(contentType),
+	}
 	if isGzipped {
 		body["compression"] = "gzip"
 	}
@@ -125,9 +135,9 @@ func (g *GlossariesService) Counts(id string) (*GlossaryCounts, error) {
 	return &counts, nil
 }
 
-func (g *GlossariesService) Export(id string, contentType string, source *string) ([]byte, error) {
+func (g *GlossariesService) Export(id string, contentType GlossaryFileFormat, source *string) ([]byte, error) {
 	params := map[string]string{
-		"content_type": contentType,
+		"content_type": string(contentType),
 	}
 	if source != nil {
 		params["source"] = *source
