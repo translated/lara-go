@@ -1,6 +1,10 @@
 package lara
 
-import "time"
+import (
+	"encoding/json"
+	"fmt"
+	"time"
+)
 
 type Memory struct {
 	ID                 string     `json:"id"`
@@ -125,6 +129,42 @@ type NGGlossaryMatch struct {
 	Translation string    `json:"translation"`
 }
 
+// NGMemoryMatchGroups is [][]NGMemoryMatch that handles both the flat form
+// (single-string translation input) and the nested form (array input).
+type NGMemoryMatchGroups [][]NGMemoryMatch
+
+func (g *NGMemoryMatchGroups) UnmarshalJSON(data []byte) error {
+	var nested [][]NGMemoryMatch
+	if err := json.Unmarshal(data, &nested); err == nil {
+		*g = nested
+		return nil
+	}
+	var flat []NGMemoryMatch
+	if err := json.Unmarshal(data, &flat); err == nil {
+		*g = [][]NGMemoryMatch{flat}
+		return nil
+	}
+	return fmt.Errorf("adapted_to_matches: unsupported data type")
+}
+
+// NGGlossaryMatchGroups is [][]NGGlossaryMatch that handles both the flat form
+// (single-string translation input) and the nested form (array input).
+type NGGlossaryMatchGroups [][]NGGlossaryMatch
+
+func (g *NGGlossaryMatchGroups) UnmarshalJSON(data []byte) error {
+	var nested [][]NGGlossaryMatch
+	if err := json.Unmarshal(data, &nested); err == nil {
+		*g = nested
+		return nil
+	}
+	var flat []NGGlossaryMatch
+	if err := json.Unmarshal(data, &flat); err == nil {
+		*g = [][]NGGlossaryMatch{flat}
+		return nil
+	}
+	return fmt.Errorf("glossaries_matches: unsupported data type")
+}
+
 type TranslateOptions struct {
 	AdaptTo      []string
 	Glossaries   []string
@@ -157,8 +197,8 @@ type TextResult struct {
 	Translation       Translation         `json:"translation"`
 	AdaptedTo         []string            `json:"adapted_to,omitempty"`
 	Glossaries        []string            `json:"glossaries,omitempty"`
-	AdaptedToMatches  [][]NGMemoryMatch   `json:"adapted_to_matches,omitempty"`
-	GlossariesMatches [][]NGGlossaryMatch `json:"glossaries_matches,omitempty"`
+	AdaptedToMatches  NGMemoryMatchGroups   `json:"adapted_to_matches,omitempty"`
+	GlossariesMatches NGGlossaryMatchGroups `json:"glossaries_matches,omitempty"`
 }
 
 type TranslationStyle string
