@@ -194,6 +194,38 @@ func (t *Translator) Languages() ([]string, error) {
 	return languages, nil
 }
 
+func (t *Translator) QualityEstimation(source, target string, sentence, translation interface{}) (interface{}, error) {
+	body := map[string]interface{}{
+		"source":      source,
+		"target":      target,
+		"sentence":    sentence,
+		"translation": translation,
+	}
+
+	switch sentence.(type) {
+	case string:
+		if _, ok := translation.(string); !ok {
+			return nil, fmt.Errorf("translation must be a string when sentence is a string")
+		}
+		var single QualityEstimationResult
+		if err := t.client.Post("/v2/detect/quality-estimation", body, nil, nil, &single); err != nil {
+			return nil, fmt.Errorf("failed to estimate translation quality: %w", err)
+		}
+		return &single, nil
+	case []string:
+		if _, ok := translation.([]string); !ok {
+			return nil, fmt.Errorf("translation must be a []string when sentence is a []string")
+		}
+		var batch []QualityEstimationResult
+		if err := t.client.Post("/v2/detect/quality-estimation", body, nil, nil, &batch); err != nil {
+			return nil, fmt.Errorf("failed to estimate translation quality: %w", err)
+		}
+		return batch, nil
+	default:
+		return nil, fmt.Errorf("sentence must be string or []string")
+	}
+}
+
 func (t *Translator) Detect(text interface{}, hint string, passlist []string) (*DetectResult, error) {
 	body := map[string]interface{}{
 		"q": text,

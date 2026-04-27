@@ -241,6 +241,34 @@ fmt.Printf("Language: %s\n", result.Language)
 fmt.Printf("Content Type: %s\n", result.ContentType)
 ```
 
+#### Quality Estimation
+
+Use `QualityEstimation()` to score how well a translation matches its source. Pass a single sentence/translation pair to get a single result, or two parallel arrays to get one result per pair.
+
+```go
+// Single pair
+result, err := laraTranslator.QualityEstimation(
+    "en-US",
+    "it-IT",
+    "Hello, how are you today?",
+    "Ciao, come stai oggi?",
+)
+single := result.(*lara.QualityEstimationResult)
+fmt.Printf("Score: %v\n", single.Score) // e.g. 0.768
+
+// Batch
+result, err = laraTranslator.QualityEstimation(
+    "en-US",
+    "it-IT",
+    []string{"Good morning.", "The weather is nice."},
+    []string{"Buongiorno.", "Il tempo è bello."},
+)
+batch := result.([]lara.QualityEstimationResult)
+for _, r := range batch {
+    fmt.Printf("Score: %v\n", r.Score) // e.g. 0.751, 0.713
+}
+```
+
 ### 📖 Document Translation
 #### Simple document translation
 

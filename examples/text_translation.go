@@ -134,4 +134,38 @@ func main() {
 		return
 	}
 	fmt.Printf("Supported languages: %v\n", languages)
+
+	// Example 8: Quality estimation for a single sentence pair
+	fmt.Println("\n=== Quality Estimation: single sentence ===")
+	qeSingle, err := laraTranslator.QualityEstimation(
+		"en-US",
+		"it-IT",
+		"Hello, how are you today?",
+		"Ciao, come stai oggi?",
+	)
+	if err != nil {
+		log.Printf("Error in quality estimation: %v", err)
+		return
+	}
+	single := qeSingle.(*lara.QualityEstimationResult)
+	fmt.Printf("Score: %v\n", single.Score)
+
+	// Example 9: Quality estimation for a batch of sentence pairs
+	fmt.Println("\n=== Quality Estimation: batch ===")
+	qeBatch, err := laraTranslator.QualityEstimation(
+		"en-US",
+		"it-IT",
+		[]string{"Good morning.", "The weather is nice."},
+		[]string{"Buongiorno.", "Il tempo è bello."},
+	)
+	if err != nil {
+		log.Printf("Error in quality estimation: %v", err)
+		return
+	}
+	batch := qeBatch.([]lara.QualityEstimationResult)
+	scores := make([]float64, len(batch))
+	for i, r := range batch {
+		scores[i] = r.Score
+	}
+	fmt.Printf("Scores: %v\n", scores)
 }

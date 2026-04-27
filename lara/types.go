@@ -317,6 +317,10 @@ type ProfanityDetectResult struct {
 	Profanities []Profanity `json:"profanities"`
 }
 
+type QualityEstimationResult struct {
+	Score float64 `json:"score"`
+}
+
 // TextRemoval represents the text removal mode for image translation
 type TextRemoval string
 
