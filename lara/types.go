@@ -194,26 +194,28 @@ type StyleguideResults struct {
 }
 
 type TranslateOptions struct {
-	AdaptTo      []string
-	Glossaries   []string
-	Instructions []string
-	ContentType  string
-	Multiline    *bool
-	TimeoutMs    int
-	Priority     string
-	UseCache     *bool
-	CacheTTL     *int
-	SourceHint   string
-	NoTrace      *bool
-	Verbose      *bool
-	Style     TranslationStyle
-	Reasoning *bool
-	Metadata  interface{}
+	AdaptTo                       []string
+	Glossaries                    []string
+	Instructions                  []string
+	ContentType                   string
+	Multiline                     *bool
+	TimeoutMs                     int
+	Priority                      string
+	UseCache                      *bool
+	CacheTTL                      *int
+	SourceHint                    string
+	NoTrace                       *bool
+	Verbose                       *bool
+	Style                         TranslationStyle
+	Reasoning                     *bool
+	Metadata                      interface{}
 	StyleguideID                  string
 	StyleguideReasoning           *bool
 	StyleguideExplanationLanguage string
-	Headers   map[string]interface{}
-	Callback  func(*TextResult) error
+	ProfanitiesDetect             ProfanitiesDetect
+	ProfanitiesHandling           ProfanitiesHandling
+	Headers                       map[string]interface{}
+	Callback                      func(*TextResult) error
 }
 
 type Translation struct {
@@ -222,15 +224,26 @@ type Translation struct {
 	TextBlocks []TextBlock
 }
 
+type ProfanityDetectUnion struct {
+	Single   *ProfanityDetectResult
+	Multiple []*ProfanityDetectResult
+}
+
+type ProfanitiesResult struct {
+	Target *ProfanityDetectUnion `json:"target,omitempty"`
+	Source *ProfanityDetectUnion `json:"source,omitempty"`
+}
+
 type TextResult struct {
-	ContentType       string              `json:"content_type"`
-	SourceLanguage    string              `json:"source_language"`
-	Translation       Translation         `json:"translation"`
-	AdaptedTo         []string            `json:"adapted_to,omitempty"`
-	Glossaries        []string            `json:"glossaries,omitempty"`
+	ContentType       string                `json:"content_type"`
+	SourceLanguage    string                `json:"source_language"`
+	Translation       Translation           `json:"translation"`
+	AdaptedTo         []string              `json:"adapted_to,omitempty"`
+	Glossaries        []string              `json:"glossaries,omitempty"`
 	AdaptedToMatches  NGMemoryMatchGroups   `json:"adapted_to_matches,omitempty"`
 	GlossariesMatches NGGlossaryMatchGroups `json:"glossaries_matches,omitempty"`
-	StyleguideResults *StyleguideResults  `json:"styleguide_results,omitempty"`
+	StyleguideResults *StyleguideResults    `json:"styleguide_results,omitempty"`
+	Profanities       *ProfanitiesResult    `json:"profanities,omitempty"`
 }
 
 type TranslationStyle string
@@ -240,6 +253,34 @@ const (
 	TranslationStyleFluid    TranslationStyle = "fluid"
 	TranslationStyleCreative TranslationStyle = "creative"
 )
+
+type ProfanitiesDetect string
+
+const (
+	ProfanitiesDetectTarget       ProfanitiesDetect = "target"
+	ProfanitiesDetectSourceTarget ProfanitiesDetect = "source_target"
+)
+
+type ProfanitiesHandling string
+
+const (
+	ProfanitiesHandlingHide   ProfanitiesHandling = "hide"
+	ProfanitiesHandlingAvoid  ProfanitiesHandling = "avoid"
+	ProfanitiesHandlingDetect ProfanitiesHandling = "detect"
+)
+
+type Profanity struct {
+	Text           string  `json:"text"`
+	StartCharIndex int     `json:"start_char_index"`
+	EndCharIndex   int     `json:"end_char_index"`
+	Score          float64 `json:"score"`
+}
+
+type ProfanityDetectResult struct {
+	MaskedText  string      `json:"masked_text"`
+	Profanities []Profanity `json:"profanities"`
+	Error       *string     `json:"error,omitempty"`
+}
 
 type DetectPrediction struct {
 	Language   string  `json:"language"`
@@ -303,18 +344,6 @@ type AudioUploadOptions struct {
 	Style       TranslationStyle
 	NoTrace     *bool
 	VoiceGender VoiceGender
-}
-
-type Profanity struct {
-	Text           string  `json:"text"`
-	StartCharIndex int     `json:"start_char_index"`
-	EndCharIndex   int     `json:"end_char_index"`
-	Score          float64 `json:"score"`
-}
-
-type ProfanityDetectResult struct {
-	MaskedText  string      `json:"masked_text"`
-	Profanities []Profanity `json:"profanities"`
 }
 
 type QualityEstimationResult struct {

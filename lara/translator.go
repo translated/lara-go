@@ -6,10 +6,10 @@ import (
 )
 
 type Translator struct {
-	client     *Client
-	Documents  *DocumentsService
-	Memories   *MemoriesService
-	Glossaries *GlossariesService
+	client      *Client
+	Documents   *DocumentsService
+	Memories    *MemoriesService
+	Glossaries  *GlossariesService
 	Audio       *AudioTranslator
 	Images      *ImagesService
 	Styleguides *StyleguidesService
@@ -36,16 +36,15 @@ func NewTranslator(auth interface{}, options *TranslatorOptions) *Translator {
 	s3Client := newS3Client()
 
 	return &Translator{
-		client:     client,
-		Documents:  newDocumentsService(client, s3Client),
-		Memories:   newMemoriesService(client),
-		Glossaries: newGlossariesService(client),
+		client:      client,
+		Documents:   newDocumentsService(client, s3Client),
+		Memories:    newMemoriesService(client),
+		Glossaries:  newGlossariesService(client),
 		Audio:       newAudioTranslator(client, s3Client),
 		Images:      newImagesService(client),
 		Styleguides: newStyleguidesService(client),
 	}
 }
-
 
 // Auto-called by Go's json package during unmarshaling
 func (t *Translation) UnmarshalJSON(data []byte) error {
@@ -69,7 +68,21 @@ func (t *Translation) UnmarshalJSON(data []byte) error {
 	return fmt.Errorf("translation: unsupported data type")
 }
 
+// Auto-called by Go's json package during unmarshaling
+func (p *ProfanityDetectUnion) UnmarshalJSON(data []byte) error {
+	var single ProfanityDetectResult
+	if err := json.Unmarshal(data, &single); err == nil {
+		p.Single = &single
+		return nil
+	}
 
+	var multiple []*ProfanityDetectResult
+	if err := json.Unmarshal(data, &multiple); err == nil {
+		p.Multiple = multiple
+		return nil
+	}
+	return fmt.Errorf("profanities: unsupported data type")
+}
 
 func (t *Translator) Translate(text interface{}, source string, target string, opts TranslateOptions) (*TextResult, error) {
 	body := make(map[string]interface{})
@@ -140,6 +153,12 @@ func (t *Translator) Translate(text interface{}, source string, target string, o
 	}
 	if opts.StyleguideExplanationLanguage != "" {
 		body["styleguide_explanation_language"] = opts.StyleguideExplanationLanguage
+	}
+	if opts.ProfanitiesDetect != "" {
+		body["profanities_detect"] = opts.ProfanitiesDetect
+	}
+	if opts.ProfanitiesHandling != "" {
+		body["profanities_handling"] = opts.ProfanitiesHandling
 	}
 
 	headers := make(map[string]string)

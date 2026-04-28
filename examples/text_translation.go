@@ -18,6 +18,7 @@ import (
  * - TextBlocks translation (mixed translatable/non-translatable content)
  * - Auto-detect source language
  * - Advanced translation options
+ * - Profanity detection options
  * - Get available languages
  */
 
@@ -126,7 +127,33 @@ func main() {
 	fmt.Printf("Original: This is a comprehensive translation example\n")
 	fmt.Printf("Italian (with all options): %s\n\n", *advancedResult.Translation.String)
 
-	// Example 7: Get available languages
+	// Example 7: Profanity detection options
+	fmt.Println("=== Translation with Profanities Detection and Handling Options ===")
+	profanityText := "Don't be such a tool."
+	verbose := true
+	detectTargetResult, err := laraTranslator.Translate(profanityText, "en-US", "it-IT", lara.TranslateOptions{
+		ProfanitiesDetect:   lara.ProfanitiesDetectSourceTarget,
+		ProfanitiesHandling: lara.ProfanitiesHandlingDetect,
+		Verbose:             &verbose,
+	})
+	if err != nil {
+		log.Printf("Error with profanity detect (target): %v", err)
+		return
+	}
+	hideResult, err := laraTranslator.Translate(profanityText, "en-US", "it-IT", lara.TranslateOptions{
+		ProfanitiesDetect:   lara.ProfanitiesDetectTarget,
+		ProfanitiesHandling: lara.ProfanitiesHandlingHide,
+		Verbose:             &verbose,
+	})
+	if err != nil {
+		log.Printf("Error with profanity hide: %v", err)
+		return
+	}
+	fmt.Printf("Original: %s\n", profanityText)
+	fmt.Printf("Detect handling (target): %s\n", *detectTargetResult.Translation.String)
+	fmt.Printf("Hide handling (source+target): %s\n\n", *hideResult.Translation.String)
+
+	// Example 8: Get available languages
 	fmt.Println("=== Available Languages ===")
 	languages, err := laraTranslator.Languages()
 	if err != nil {
