@@ -134,17 +134,19 @@ func main() {
 		source := "en-US"
 		csvUniData, err := laraTranslator.Glossaries.Export(glossary.ID, "csv/table-uni", &source)
 		if err != nil {
-			return fmt.Errorf("error exporting as CSV table unidirectional: %v", err)
-		}
-		fmt.Printf("✅ CSV unidirectional export successful (%d bytes)\n", len(csvUniData))
+			fmt.Printf("Error with export: %v\n", err)
+		} else {
+			fmt.Printf("✅ CSV unidirectional export successful (%d bytes)\n", len(csvUniData))
 
-		// Save sample exports to files - replace with your desired output paths
-		exportFilePath := filepath.Join(".", "exported_glossary.csv") // Replace with actual path
-		err = os.WriteFile(exportFilePath, csvUniData, 0644)
-		if err != nil {
-			return fmt.Errorf("error saving export file: %v", err)
+			// Save sample exports to files - replace with your desired output paths
+			exportFilePath := filepath.Join(".", "exported_glossary.csv") // Replace with actual path
+			err = os.WriteFile(exportFilePath, csvUniData, 0644)
+			if err != nil {
+				fmt.Printf("Error saving export file: %v\n", err)
+			} else {
+				fmt.Printf("💾 Sample export saved to: %s\n", filepath.Base(exportFilePath))
+			}
 		}
-		fmt.Printf("💾 Sample export saved to: %s\n", filepath.Base(exportFilePath))
 		fmt.Println()
 
 		// Example 5: Glossary Terms Count
