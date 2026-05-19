@@ -385,27 +385,14 @@ func (c *Client) sign(method, path, contentMD5, contentType, date string) string
 
 func parseAPIError(statusCode int, body []byte) *LaraError {
 	var apiError struct {
-		Error struct {
-			Type    string `json:"type"`
-			Message string `json:"message"`
-		} `json:"error"`
 		Type    string `json:"type"`
 		Message string `json:"message"`
 	}
-	if err := json.Unmarshal(body, &apiError); err == nil {
-		if apiError.Error.Type != "" {
-			return &LaraError{
-				Status:  statusCode,
-				Type:    apiError.Error.Type,
-				Message: apiError.Error.Message,
-			}
-		}
-		if apiError.Type != "" {
-			return &LaraError{
-				Status:  statusCode,
-				Type:    apiError.Type,
-				Message: apiError.Message,
-			}
+	if err := json.Unmarshal(body, &apiError); err == nil && apiError.Type != "" {
+		return &LaraError{
+			Status:  statusCode,
+			Type:    apiError.Type,
+			Message: apiError.Message,
 		}
 	}
 	return &LaraError{
@@ -420,42 +407,7 @@ func processStreamLine(line []byte, callback func([]byte) error) error {
 	if len(line) == 0 {
 		return nil
 	}
-
-	var resp struct {
-		Status  int             `json:"status"`
-		Data    json.RawMessage `json:"data"`
-		Content json.RawMessage `json:"content"`
-	}
-	if err := json.Unmarshal(line, &resp); err != nil {
-		return nil
-	}
-
-	if resp.Status < 200 || resp.Status >= 300 {
-		errBody := json.RawMessage(line)
-		if len(resp.Data) > 0 {
-			errBody = resp.Data
-		}
-		return parseAPIError(resp.Status, errBody)
-	}
-
-	var content json.RawMessage
-	if len(resp.Data) > 0 {
-		var d struct {
-			Content json.RawMessage `json:"content"`
-		}
-		if err := json.Unmarshal(resp.Data, &d); err == nil && len(d.Content) > 0 {
-			content = d.Content
-		} else {
-			content = resp.Data
-		}
-	} else if len(resp.Content) > 0 {
-		content = resp.Content
-	}
-
-	if len(content) > 0 {
-		return callback(content)
-	}
-	return nil
+	return callback(line)
 }
 
 func (c *Client) handleContent(respBytes []byte, result interface{}) error {

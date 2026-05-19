@@ -176,7 +176,7 @@ func (t *Translator) Translate(text interface{}, source string, target string, o
 
 	// Always use streaming; callback only invoked when reasoning is enabled
 	var lastResult *TextResult
-	err := t.client.PostAndGetStream("/translate", body, headers, func(contentBytes []byte) error {
+	err := t.client.PostAndGetStream("/v2/translate", body, headers, func(contentBytes []byte) error {
 		var result TextResult
 		if err := json.Unmarshal(contentBytes, &result); err != nil {
 			return fmt.Errorf("failed to unmarshal partial result: %w", err)
