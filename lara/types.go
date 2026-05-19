@@ -16,6 +16,7 @@ type Memory struct {
 	OwnerID            string     `json:"owner_id"`
 	CollaboratorsCount int        `json:"collaborators_count"`
 	SharedAt           *time.Time `json:"shared_at,omitempty"`
+	IsPersonal         bool       `json:"is_personal"`
 }
 
 type Import struct {
@@ -31,11 +32,12 @@ type MemoryImport = Import
 type GlossaryImport = Import
 
 type Glossary struct {
-	ID        string    `json:"id"`
-	Name      string    `json:"name"`
-	OwnerID   string    `json:"owner_id"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID         string    `json:"id"`
+	Name       string    `json:"name"`
+	OwnerID    string    `json:"owner_id"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
+	IsPersonal bool      `json:"is_personal"`
 }
 
 type GlossaryCounts struct {
@@ -173,12 +175,13 @@ func (g *NGGlossaryMatchGroups) UnmarshalJSON(data []byte) error {
 }
 
 type Styleguide struct {
-	ID        string    `json:"id"`
-	Name      string    `json:"name"`
-	Content   *string   `json:"content,omitempty"`
-	OwnerID   string    `json:"owner_id"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID         string    `json:"id"`
+	Name       string    `json:"name"`
+	Content    *string   `json:"content,omitempty"`
+	OwnerID    string    `json:"owner_id"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
+	IsPersonal bool      `json:"is_personal"`
 }
 
 type StyleguideChange struct {
