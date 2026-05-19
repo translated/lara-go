@@ -31,6 +31,17 @@ type Import struct {
 type MemoryImport = Import
 type GlossaryImport = Import
 
+type MemoryExport struct {
+	JobID string `json:"job_id"`
+}
+
+type MemoryExportFormat string
+
+const (
+	MemoryExportFormatTmx MemoryExportFormat = "tmx"
+	MemoryExportFormatJtm MemoryExportFormat = "jtm"
+)
+
 type Glossary struct {
 	ID         string    `json:"id"`
 	Name       string    `json:"name"`

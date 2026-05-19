@@ -104,6 +104,8 @@ go run document_translation.go
   - Add individual translations
   - Multiple memory operations
   - TMX file import with progress monitoring
+  - TMX import with callback URL (async notification)
+  - Async memory export with callback URL
   - Translation deletion
   - Translation with TUID and context
 
@@ -382,6 +384,27 @@ memoryImport, err := laraTranslator.Memories.AddTranslationWithContext(
 // TMX import from file
 tmxFilePath := "/path/to/your/memory.tmx"  // Replace with actual TMX file path
 memoryImport, err := laraTranslator.Memories.ImportTmxFromPath("mem_1A2b3C4d5E6f7G8h9I0jKl", tmxFilePath)
+
+// TMX import with a callback URL (notified when the import completes)
+memoryImport, err = laraTranslator.Memories.ImportTmxFromPathWithCallback(
+    "mem_1A2b3C4d5E6f7G8h9I0jKl",
+    tmxFilePath,
+    "https://your-server.example.com/lara/import-callback",
+)
+
+// Async memory export - returns a job ID; the result is delivered to your callback URL when ready
+exportJob, err := laraTranslator.Memories.ExportAsync(
+    "mem_1A2b3C4d5E6f7G8h9I0jKl",
+    "https://your-server.example.com/lara/export-callback",
+)
+jobID := exportJob.JobID
+
+// Async memory export with explicit format
+exportJob, err = laraTranslator.Memories.ExportAsyncWithFormat(
+    "mem_1A2b3C4d5E6f7G8h9I0jKl",
+    "https://your-server.example.com/lara/export-callback",
+    lara.MemoryExportFormatTmx, // or lara.MemoryExportFormatJtm
+)
 
 // Delete translation
 // Important: if you omit tuid, all entries that match the provided fields will be removed

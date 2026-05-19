@@ -145,7 +145,34 @@ func main() {
 		fmt.Printf("TMX file not found: %s\n", tmxFilePath)
 	}
 
-	// Example 5: Translation deletion
+	// Example 5: TMX import with callback URL
+	fmt.Println("=== TMX Import with Callback URL ===")
+	callbackUrl := "https://your-server.example.com/lara/import-callback"
+	if _, err := os.Stat(tmxFilePath); err == nil {
+		tmxImportWithCallback, err := laraTranslator.Memories.ImportTmxFromPathWithCallback(memory.ID, tmxFilePath, false, callbackUrl)
+		if err != nil {
+			log.Printf("Error with TMX import with callback: %v", err)
+		} else {
+			fmt.Printf("Import started with ID: %s (callback: %s)\n", tmxImportWithCallback.ID, callbackUrl)
+		}
+		fmt.Println()
+	} else {
+		fmt.Printf("TMX file not found: %s\n", tmxFilePath)
+	}
+
+	// Example 6: Async memory export
+	fmt.Println("=== Async Memory Export ===")
+	exportCallbackUrl := "https://your-server.example.com/lara/export-callback"
+	exportJob, err := laraTranslator.Memories.ExportAsyncWithFormat(memory.ID, exportCallbackUrl, lara.MemoryExportFormatTmx)
+	if err != nil {
+		log.Printf("Error starting async export: %v", err)
+	} else {
+		fmt.Printf("✅ Export job started (Job ID: %s)\n", exportJob.JobID)
+		fmt.Printf("The export result will be delivered to: %s\n", exportCallbackUrl)
+	}
+	fmt.Println()
+
+	// Example 7: Translation deletion
 	fmt.Println("=== Translation Deletion ===")
 
 	// Delete translation unit

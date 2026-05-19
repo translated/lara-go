@@ -3,7 +3,6 @@ package lara
 import (
 	"fmt"
 	"os"
-	"strings"
 	"time"
 )
 
@@ -110,23 +109,30 @@ func (m *MemoriesService) Connect(id string) (*Memory, error) {
 }
 
 func (m *MemoriesService) ImportTmxFromPath(id, tmxPath string) (*MemoryImport, error) {
+	return m.ImportTmxFromPathWithCallback(id, tmxPath, false, "")
+}
+
+func (m *MemoriesService) ImportTmxFromPathWithCallback(id, tmxPath string, gzip bool, callbackUrl string) (*MemoryImport, error) {
 	file, err := os.Open(tmxPath)
 	if err != nil {
 		return nil, err
 	}
 	defer file.Close()
 
-	return m.ImportTmx(id, file)
+	return m.ImportTmxWithCallback(id, file, gzip, callbackUrl)
 }
 
 func (m *MemoriesService) ImportTmx(id string, tmx *os.File) (*MemoryImport, error) {
-	// Auto-detect gzip compression based on filename (like Java SDK)
-	fileName := tmx.Name()
-	isGzipped := strings.HasSuffix(strings.ToLower(fileName), ".gz")
+	return m.ImportTmxWithCallback(id, tmx, false, "")
+}
 
+func (m *MemoriesService) ImportTmxWithCallback(id string, tmx *os.File, gzip bool, callbackUrl string) (*MemoryImport, error) {
 	body := map[string]string{}
-	if isGzipped {
+	if gzip {
 		body["compression"] = "gzip"
+	}
+	if callbackUrl != "" {
+		body["callback_url"] = callbackUrl
 	}
 
 	files := map[string]*os.File{
@@ -150,6 +156,25 @@ func (m *MemoriesService) GetImportStatus(id string) (*MemoryImport, error) {
 	}
 
 	return &memoryImport, nil
+}
+
+func (m *MemoriesService) ExportAsync(id, callbackUrl string) (*MemoryExport, error) {
+	return m.ExportAsyncWithFormat(id, callbackUrl, "")
+}
+
+func (m *MemoriesService) ExportAsyncWithFormat(id, callbackUrl string, format MemoryExportFormat) (*MemoryExport, error) {
+	params := map[string]string{"callback_url": callbackUrl}
+	if format != "" {
+		params["format"] = string(format)
+	}
+
+	var memoryExport MemoryExport
+	err := m.client.Get(fmt.Sprintf("/v2/memories/%s/export/async", id), params, nil, &memoryExport)
+	if err != nil {
+		return nil, fmt.Errorf("failed to start memory export: %w", err)
+	}
+
+	return &memoryExport, nil
 }
 
 func (m *MemoriesService) AddTranslation(id, source, target, sentence, translation string) (*MemoryImport, error) {
