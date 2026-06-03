@@ -12,6 +12,7 @@ All major translation features are accessible, making it easy to integrate and c
 - **Document Translation**: Word, PDF, and other document formats with status monitoring
 - **Translation Memory**: Store and reuse translations for consistency
 - **Glossaries**: Enforce terminology standards across translations
+- **Styleguides**: Define tone, voice, and writing style rules for translations
 - **Audio Translation**: Translate audio files with status monitoring
 - **Image Translation**: Translate whole images or extract and translate text blocks
 - **Language Detection**: Automatic source language identification
@@ -125,6 +126,17 @@ go run memories_management.go
 ```bash
 cd examples
 go run glossaries_management.go
+```
+
+### Styleguide Management
+- **[styleguides_management.go](examples/styleguides_management.go)** - Styleguide management examples
+  - Create, list, get, update, delete styleguides
+  - Update name, content, or both at once
+  - Handling of non-existent styleguides
+
+```bash
+cd examples
+go run styleguides_management.go
 ```
 
 ### Audio Translation
@@ -441,6 +453,34 @@ csvData, err := laraTranslator.Glossaries.Export("gls_1A2b3C4d5E6f7G8h9I0jKl", "
 
 // Get glossary terms count
 counts, err := laraTranslator.Glossaries.Counts("gls_1A2b3C4d5E6f7G8h9I0jKl")
+```
+
+### 📋 Styleguide Management
+
+```go
+// Create styleguide
+styleguide, err := laraTranslator.Styleguides.Create("MyStyleguide", "Always use formal language.")
+
+// List all styleguides
+styleguides, err := laraTranslator.Styleguides.List()
+
+// Get a specific styleguide
+styleguide, err = laraTranslator.Styleguides.Get("stg_1A2b3C4d5E6f7G8h9I0jKl")
+
+// Update styleguide — pass nil for fields you don't want to change
+// Update only the name
+name := "UpdatedStyleguide"
+styleguide, err = laraTranslator.Styleguides.Update("stg_1A2b3C4d5E6f7G8h9I0jKl", &name, nil)
+
+// Update only the content
+content := "Always use informal language."
+styleguide, err = laraTranslator.Styleguides.Update("stg_1A2b3C4d5E6f7G8h9I0jKl", nil, &content)
+
+// Update both
+styleguide, err = laraTranslator.Styleguides.Update("stg_1A2b3C4d5E6f7G8h9I0jKl", &name, &content)
+
+// Delete styleguide
+styleguide, err = laraTranslator.Styleguides.Delete("stg_1A2b3C4d5E6f7G8h9I0jKl")
 ```
 
 ### Translation Options

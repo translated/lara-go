@@ -21,6 +21,20 @@ func (s *StyleguidesService) List() ([]Styleguide, error) {
 	return styleguides, nil
 }
 
+func (s *StyleguidesService) Create(name, content string) (*Styleguide, error) {
+	body := map[string]interface{}{
+		"name":    name,
+		"content": content,
+	}
+
+	var styleguide Styleguide
+	err := s.client.Post("/v2/styleguides", body, nil, nil, &styleguide)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create styleguide: %w", err)
+	}
+	return &styleguide, nil
+}
+
 func (s *StyleguidesService) Get(id string) (*Styleguide, error) {
 	var styleguide Styleguide
 	err := s.client.Get(fmt.Sprintf("/v2/styleguides/%s", id), nil, nil, &styleguide)
@@ -29,6 +43,32 @@ func (s *StyleguidesService) Get(id string) (*Styleguide, error) {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("failed to get styleguide: %w", err)
+	}
+	return &styleguide, nil
+}
+
+func (s *StyleguidesService) Delete(id string) (*Styleguide, error) {
+	var styleguide Styleguide
+	err := s.client.Delete(fmt.Sprintf("/v2/styleguides/%s", id), nil, nil, &styleguide)
+	if err != nil {
+		return nil, fmt.Errorf("failed to delete styleguide: %w", err)
+	}
+	return &styleguide, nil
+}
+
+func (s *StyleguidesService) Update(id string, name, content *string) (*Styleguide, error) {
+	body := map[string]interface{}{}
+	if name != nil {
+		body["name"] = *name
+	}
+	if content != nil {
+		body["content"] = *content
+	}
+
+	var styleguide Styleguide
+	err := s.client.Put(fmt.Sprintf("/v2/styleguides/%s", id), body, nil, nil, &styleguide)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update styleguide: %w", err)
 	}
 	return &styleguide, nil
 }
