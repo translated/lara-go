@@ -368,15 +368,19 @@ type QualityEstimationResult struct {
 type TextRemoval string
 
 const (
-	TextRemovalOverlay    TextRemoval = "overlay"
-	TextRemovalInpainting TextRemoval = "inpainting"
+	TextRemovalOverlay        TextRemoval = "overlay"
+	TextRemovalInpainting     TextRemoval = "inpainting"
+	TextRemovalGenerative     TextRemoval = "generative"
+	TextRemovalGenerativeFast TextRemoval = "generative_fast"
 )
 
 type ImageTranslateOptions struct {
-	AdaptTo     []string
-	Glossaries  []string
-	Style       TranslationStyle
+	AdaptTo    []string
+	Glossaries []string
+	Style      TranslationStyle
+	// Deprecated: Use Model instead.
 	TextRemoval TextRemoval
+	Model       TextRemoval
 	NoTrace     *bool
 }
 

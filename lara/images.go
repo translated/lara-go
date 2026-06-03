@@ -44,8 +44,12 @@ func (s *ImagesService) TranslateWithOptions(filePath, source *string, target st
 		if options.Style != "" {
 			body["style"] = string(options.Style)
 		}
-		if options.TextRemoval != "" {
-			body["text_removal"] = string(options.TextRemoval)
+		model := options.Model
+		if model == "" {
+			model = options.TextRemoval
+		}
+		if model != "" {
+			body["model"] = string(model)
 		}
 	}
 

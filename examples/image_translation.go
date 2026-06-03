@@ -61,10 +61,10 @@ func main() {
 	fmt.Println("=== Image Translation with Advanced Options ===")
 
 	advancedBytes, err := laraTranslator.Images.TranslateWithOptions(&sampleFilePath, &sourceLang, targetLang, &lara.ImageTranslateOptions{
-		AdaptTo:     []string{"mem_1A2b3C4d5E6f7G8h9I0jKl"}, // Replace with actual memory IDs
-		Glossaries:  []string{"gls_1A2b3C4d5E6f7G8h9I0jKl"}, // Replace with actual glossary IDs
-		Style:       lara.TranslationStyleFaithful,
-		TextRemoval: lara.TextRemovalInpainting,
+		AdaptTo:    []string{"mem_1A2b3C4d5E6f7G8h9I0jKl"}, // Replace with actual memory IDs
+		Glossaries: []string{"gls_1A2b3C4d5E6f7G8h9I0jKl"}, // Replace with actual glossary IDs
+		Style:      lara.TranslationStyleFaithful,
+		Model:      lara.TextRemovalInpainting,
 	})
 	if err != nil {
 		log.Printf("Error in advanced translation: %v", err)
