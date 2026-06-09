@@ -35,6 +35,10 @@ type MemoryExport struct {
 	JobID string `json:"job_id"`
 }
 
+type GlossaryExport struct {
+	JobID string `json:"job_id"`
+}
+
 type MemoryExportFormat string
 
 const (

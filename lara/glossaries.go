@@ -80,13 +80,17 @@ func (g *GlossariesService) ImportCsvFromPath(id string, csvPath string) (*Gloss
 }
 
 func (g *GlossariesService) ImportCsvFromPathWithFormat(id string, csvPath string, contentType GlossaryFileFormat) (*GlossaryImport, error) {
+	return g.ImportCsvFromPathWithFormatAndCallback(id, csvPath, contentType, "")
+}
+
+func (g *GlossariesService) ImportCsvFromPathWithFormatAndCallback(id string, csvPath string, contentType GlossaryFileFormat, callbackUrl string) (*GlossaryImport, error) {
 	file, err := os.Open(csvPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open CSV file: %w", err)
 	}
 	defer file.Close()
 
-	return g.ImportCsvWithFormat(id, file, contentType)
+	return g.ImportCsvWithFormatAndCallback(id, file, contentType, callbackUrl)
 }
 
 func (g *GlossariesService) ImportCsv(id string, csv *os.File) (*GlossaryImport, error) {
@@ -94,6 +98,10 @@ func (g *GlossariesService) ImportCsv(id string, csv *os.File) (*GlossaryImport,
 }
 
 func (g *GlossariesService) ImportCsvWithFormat(id string, csv *os.File, contentType GlossaryFileFormat) (*GlossaryImport, error) {
+	return g.ImportCsvWithFormatAndCallback(id, csv, contentType, "")
+}
+
+func (g *GlossariesService) ImportCsvWithFormatAndCallback(id string, csv *os.File, contentType GlossaryFileFormat, callbackUrl string) (*GlossaryImport, error) {
 	// Auto-detect gzip compression based on filename (like Java SDK)
 	fileName := csv.Name()
 	isGzipped := strings.HasSuffix(strings.ToLower(fileName), ".gz")
@@ -103,6 +111,9 @@ func (g *GlossariesService) ImportCsvWithFormat(id string, csv *os.File, content
 	}
 	if isGzipped {
 		body["compression"] = "gzip"
+	}
+	if callbackUrl != "" {
+		body["callback_url"] = callbackUrl
 	}
 
 	files := map[string]*os.File{
@@ -148,6 +159,23 @@ func (g *GlossariesService) Export(id string, contentType GlossaryFileFormat, so
 		return nil, fmt.Errorf("failed to export glossary: %w", err)
 	}
 	return content, nil
+}
+
+func (g *GlossariesService) ExportAsync(id, callbackUrl string, contentType GlossaryFileFormat, source *string) (*GlossaryExport, error) {
+	params := map[string]string{
+		"callback_url": callbackUrl,
+		"content_type": string(contentType),
+	}
+	if source != nil {
+		params["source"] = *source
+	}
+
+	var glossaryExport GlossaryExport
+	err := g.client.Get(fmt.Sprintf("/v2/glossaries/%s/export/async", id), params, nil, &glossaryExport)
+	if err != nil {
+		return nil, fmt.Errorf("failed to start glossary export: %w", err)
+	}
+	return &glossaryExport, nil
 }
 
 func (g *GlossariesService) WaitForImport(glossaryImport *GlossaryImport, updateCallback func(*GlossaryImport), maxWaitTime *time.Duration) (*GlossaryImport, error) {

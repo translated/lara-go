@@ -16,7 +16,7 @@ import (
  * This example demonstrates:
  * - Create, list, update, delete glossaries
  * - CSV import with status monitoring
- * - Glossary export
+ * - Glossary export (sync and async)
  * - Glossary terms count
  * - Import status checking
  * - Add or replace glossary entries
@@ -126,7 +126,23 @@ func main() {
 			fmt.Printf("CSV file not found: %s\n", csvFilePath)
 		}
 
-		// Example 4: Export functionality
+		// Example 4: CSV import with a callback URL (async notification when import completes)
+		fmt.Println("=== CSV Import with Callback URL ===")
+		if _, err := os.Stat(csvFilePath); err == nil {
+			callbackUrl := "https://your-server.example.com/lara/import-callback" // Replace with your endpoint
+			// Note: the callback variants require an explicit content type, so pass one even for the default format.
+			importWithCallback, err := laraTranslator.Glossaries.ImportCsvFromPathWithFormatAndCallback(glossary.ID, csvFilePath, "csv/table-uni", callbackUrl)
+			if err != nil {
+				log.Printf("Error starting CSV import with callback: %v", err)
+			} else {
+				fmt.Printf("Import started with ID: %s (callback: %s)\n", importWithCallback.ID, callbackUrl)
+			}
+			fmt.Println()
+		} else {
+			fmt.Printf("CSV file not found: %s\n", csvFilePath)
+		}
+
+		// Example 5: Export functionality
 		fmt.Println("=== Export Functionality ===")
 
 		// Export as CSV table unidirectional format
@@ -146,10 +162,25 @@ func main() {
 			} else {
 				fmt.Printf("💾 Sample export saved to: %s\n", filepath.Base(exportFilePath))
 			}
+
+			// Async export - returns a job ID; the result is delivered to your callback URL when ready
+			fmt.Println("📤 Starting async export...")
+			exportJob, err := laraTranslator.Glossaries.ExportAsync(
+				glossary.ID,
+				"https://your-server.example.com/lara/export-callback", // Replace with your actual callback URL
+				"csv/table-uni",
+				&source,
+			)
+			if err != nil {
+				fmt.Printf("Error starting async export: %v\n", err)
+			} else {
+				fmt.Printf("✅ Async export started (Job ID: %s)\n", exportJob.JobID)
+				fmt.Println("   The export result will be delivered to your callback URL when ready.")
+			}
 		}
 		fmt.Println()
 
-		// Example 5: Glossary Terms Count
+		// Example 6: Glossary Terms Count
 		fmt.Println("=== Glossary Terms Count ===")
 
 		// Get detailed counts
@@ -178,7 +209,7 @@ func main() {
 		fmt.Printf("   Total entries: %d\n", totalEntries)
 		fmt.Println()
 
-		// Example 6: Add or replace glossary entries
+		// Example 7: Add or replace glossary entries
 		fmt.Println("=== Add or Replace Glossary Entries ===")
 
 		terms := []lara.GlossaryTerm{
@@ -217,7 +248,7 @@ func main() {
 		}
 		fmt.Println()
 
-		// Example 7: Delete glossary entries
+		// Example 8: Delete glossary entries
 		fmt.Println("=== Delete Glossary Entries ===")
 
 		deleteByGUIDResult, err := laraTranslator.Glossaries.DeleteEntry(glossary.ID, nil, &customGUID)

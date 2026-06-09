@@ -119,7 +119,7 @@ go run memories_management.go
 - **[glossaries_management.go](examples/glossaries_management.go)** - Glossary management examples
   - Create, list, update, delete glossaries
   - CSV import with status monitoring
-  - Glossary export
+  - Glossary export (sync and async)
   - Glossary terms count
   - Import status checking
 
@@ -450,6 +450,15 @@ completedImport, err := laraTranslator.Glossaries.WaitForImport(glossaryImport, 
 
 // Export glossary
 csvData, err := laraTranslator.Glossaries.Export("gls_1A2b3C4d5E6f7G8h9I0jKl", "csv/table-uni", "en-US")
+
+// Async glossary export - returns a job ID; the result is delivered to your callback URL when ready
+exportJob, err := laraTranslator.Glossaries.ExportAsync(
+    "gls_1A2b3C4d5E6f7G8h9I0jKl",
+    "https://your-server.example.com/lara/export-callback",
+    "csv/table-uni",
+    "en-US",
+)
+jobID := exportJob.JobID
 
 // Get glossary terms count
 counts, err := laraTranslator.Glossaries.Counts("gls_1A2b3C4d5E6f7G8h9I0jKl")
