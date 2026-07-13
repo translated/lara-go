@@ -192,9 +192,7 @@ func (c *Client) refreshTokens() error {
 	}
 
 	c.token = authResp.Token
-	if newRefreshToken := resp.Header.Get("x-lara-refresh-token"); newRefreshToken != "" {
-		c.refreshToken = newRefreshToken
-	}
+	c.refreshToken = resp.Header.Get("x-lara-refresh-token")
 
 	return nil
 }
