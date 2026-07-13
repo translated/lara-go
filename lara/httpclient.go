@@ -40,7 +40,7 @@ func newClient(auth interface{}, baseURL string) *Client {
 		baseURL:    strings.TrimRight(baseURL, "/"),
 		httpClient: &http.Client{},
 		sdkName:    "lara-go",
-		sdkVersion: "1.5.1",
+		sdkVersion: "1.5.2",
 	}
 
 	// Set authentication method based on type
