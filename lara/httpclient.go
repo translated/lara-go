@@ -29,18 +29,20 @@ type Client struct {
 	httpClient   *http.Client
 	sdkName      string
 	sdkVersion   string
+	sessionID    string
 }
 
 type authResponse struct {
 	Token string `json:"token"`
 }
 
-func newClient(auth interface{}, baseURL string) *Client {
+func newClient(auth interface{}, baseURL, sessionID string) *Client {
 	client := &Client{
 		baseURL:    strings.TrimRight(baseURL, "/"),
 		httpClient: &http.Client{},
 		sdkName:    "lara-go",
 		sdkVersion: "1.5.2",
+		sessionID:  sessionID,
 	}
 
 	// Set authentication method based on type
@@ -124,6 +126,9 @@ func (c *Client) authenticateWithAccessKey() error {
 	req.Header.Set("X-Lara-Date", c.httpDate())
 	req.Header.Set("X-Lara-SDK-Name", c.sdkName)
 	req.Header.Set("X-Lara-SDK-Version", c.sdkVersion)
+	if c.sessionID != "" {
+		req.Header.Set("X-Lara-Auth-Session-Id", c.sessionID)
+	}
 
 	// Sign request with HMAC for authentication
 	signature := c.sign(method, path, contentMD5, contentType, req.Header.Get("X-Lara-Date"))

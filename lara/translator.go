@@ -17,6 +17,7 @@ type Translator struct {
 
 type TranslatorOptions struct {
 	ServerURL string
+	SessionID string
 }
 
 // NewTranslator creates a new Translator with any supported authentication method.
@@ -31,7 +32,12 @@ func NewTranslator(auth interface{}, options *TranslatorOptions) *Translator {
 		serverURL = options.ServerURL
 	}
 
-	client := newClient(auth, serverURL)
+	sessionID := ""
+	if options != nil {
+		sessionID = options.SessionID
+	}
+
+	client := newClient(auth, serverURL, sessionID)
 
 	s3Client := newS3Client()
 
