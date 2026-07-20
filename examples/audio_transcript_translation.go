@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"time"
@@ -11,14 +10,15 @@ import (
 )
 
 /**
- * Complete audio translation examples for the Lara Go SDK
+ * Complete audio transcript translation examples for the Lara Go SDK
  *
  * Supported audio formats: .wav, .mp3, .opus, .ogg, .webm
  *
- * This example demonstrates:
- * - Basic audio translation
+ * This example demonstrates the async Audio2Text flow, which returns only the
+ * translated transcript (JSON) instead of a dubbed audio file:
+ * - Basic transcript translation
  * - Advanced options with memories and glossaries
- * - Step-by-step audio translation with status monitoring
+ * - Step-by-step transcript translation with status monitoring
  */
 
 func main() {
@@ -45,38 +45,24 @@ func main() {
 	sourceLang := "en-US"
 	targetLang := "de-DE"
 
-	// Example 1: Basic audio translation
-	fmt.Println("=== Basic Audio Translation ===")
-	fmt.Printf("Translating audio: %s from %s to %s\n", filename, sourceLang, targetLang)
+	// Example 1: Basic transcript translation
+	fmt.Println("=== Basic Transcript Translation ===")
+	fmt.Printf("Transcribing audio: %s from %s to %s\n", filename, sourceLang, targetLang)
 
-	reader, err := translator.Audio.Translate(&sampleFilePath, &filename, &sourceLang, targetLang)
+	result, err := translator.Audio.TranslateTranscript(&sampleFilePath, &filename, &sourceLang, targetLang)
 	if err != nil {
-		log.Printf("Error translating audio: %v\n", err)
-		return
-	}
-	defer reader.Close()
-
-	outputPath := "sample_audio_translated.mp3"
-	outputFile, err := os.Create(outputPath)
-	if err != nil {
-		log.Printf("Error creating output file: %v\n", err)
-		return
-	}
-	defer outputFile.Close()
-
-	_, err = io.Copy(outputFile, reader)
-	if err != nil {
-		log.Printf("Error saving translated audio: %v\n", err)
+		log.Printf("Error translating transcript: %v\n", err)
 		return
 	}
 
-	fmt.Println("Audio translation completed")
-	fmt.Printf("Translated file saved to: %s\n\n", outputPath)
+	fmt.Println("Transcript translation completed")
+	fmt.Printf("Translation: %s\n", result.Translation)
+	fmt.Printf("Segments: %d\n\n", len(result.Segments))
 
-	// Example 2: Audio translation with advanced options
-	fmt.Println("=== Audio Translation with Advanced Options ===")
+	// Example 2: Transcript translation with advanced options
+	fmt.Println("=== Transcript Translation with Advanced Options ===")
 
-	reader2, err := translator.Audio.TranslateWithOptions(&sampleFilePath, &filename, &sourceLang, targetLang, &lara.AudioUploadOptions{
+	result2, err := translator.Audio.TranslateTranscriptWithOptions(&sampleFilePath, &filename, &sourceLang, targetLang, &lara.AudioTranscriptUploadOptions{
 		AdaptTo:    []string{"mem_1A2b3C4d5E6f7G8h9I0jKl"}, // Replace with actual memory IDs
 		Glossaries: []string{"gls_1A2b3C4d5E6f7G8h9I0jKl"}, // Replace with actual glossary IDs
 	})
@@ -84,31 +70,16 @@ func main() {
 		log.Printf("Error in advanced translation: %v\n", err)
 		return
 	}
-	defer reader2.Close()
 
-	outputPath2 := "advanced_audio_translated.mp3"
-	outputFile2, err := os.Create(outputPath2)
-	if err != nil {
-		log.Printf("Error creating output file: %v\n", err)
-		return
-	}
-	defer outputFile2.Close()
+	fmt.Println("Advanced transcript translation completed")
+	fmt.Printf("Translation: %s\n\n", result2.Translation)
 
-	_, err = io.Copy(outputFile2, reader2)
-	if err != nil {
-		log.Printf("Error saving translated audio: %v\n", err)
-		return
-	}
-
-	fmt.Println("Advanced Audio translation completed")
-	fmt.Printf("Translated file saved to: %s\n\n", outputPath2)
-
-	// Example 3: Step-by-step audio translation
-	fmt.Println("=== Step-by-Step Audio Translation ===")
+	// Example 3: Step-by-step transcript translation
+	fmt.Println("=== Step-by-Step Transcript Translation ===")
 
 	// Step 1: Upload audio
 	fmt.Println("Step 1: Uploading audio...")
-	audio, err := translator.Audio.UploadWithOptions(&sampleFilePath, &filename, &sourceLang, targetLang, &lara.AudioUploadOptions{
+	audio, err := translator.Audio.UploadForTranscriptionWithOptions(&sampleFilePath, &filename, &sourceLang, targetLang, &lara.AudioTranscriptUploadOptions{
 		AdaptTo:    []string{"mem_1A2b3C4d5E6f7G8h9I0jKl"}, // Replace with actual memory IDs
 		Glossaries: []string{"gls_1A2b3C4d5E6f7G8h9I0jKl"}, // Replace with actual glossary IDs
 	})
@@ -129,7 +100,13 @@ func main() {
 	fmt.Printf("Current status: %s\n", updatedAudio.Status)
 
 	// Wait for completion
+	maxWaitTime := 15 * time.Minute
+	start := time.Now()
 	for updatedAudio.Status != lara.AudioStatusTranslated && updatedAudio.Status != lara.AudioStatusError {
+		if time.Since(start) > maxWaitTime {
+			log.Printf("Timed out waiting for the transcript translation\n")
+			return
+		}
 		time.Sleep(2 * time.Second)
 		updatedAudio, err = translator.Audio.Status(audio.ID)
 		if err != nil {
@@ -144,32 +121,23 @@ func main() {
 		if updatedAudio.ErrorReason != nil {
 			errorMsg = *updatedAudio.ErrorReason
 		}
-		log.Printf("Audio translation failed: %s\n", errorMsg)
+		log.Printf("Transcript translation failed: %s\n", errorMsg)
 		return
 	}
 
-	// Step 3: Download translated audio
-	fmt.Println("\nStep 3: Downloading translated audio...")
-	reader3, err := translator.Audio.Download(audio.ID)
+	// Step 3: Retrieve translated transcript
+	fmt.Println("\nStep 3: Retrieving translated transcript...")
+	result3, err := translator.Audio.GetTranslatedTranscript(audio.ID)
 	if err != nil {
-		log.Printf("Download error: %v\n", err)
-		return
-	}
-	defer reader3.Close()
-
-	outputPath3 := "step_audio_translated.mp3"
-	outputFile3, err := os.Create(outputPath3)
-	if err != nil {
-		log.Printf("Error creating output file: %v\n", err)
-		return
-	}
-	defer outputFile3.Close()
-
-	_, err = io.Copy(outputFile3, reader3)
-	if err != nil {
-		log.Printf("Error saving translated audio: %v\n", err)
+		log.Printf("Retrieve error: %v\n", err)
 		return
 	}
 
-	fmt.Println("Step-by-step translation completed")
+	fmt.Printf("Text: %s\n", result3.Text)
+	fmt.Printf("Translation: %s\n", result3.Translation)
+	for _, segment := range result3.Segments {
+		fmt.Printf("[%.0f - %.0f] %s\n", segment.Start, segment.End, segment.Translation)
+	}
+
+	fmt.Println("Step-by-step transcript translation completed")
 }

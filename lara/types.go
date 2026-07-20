@@ -364,6 +364,32 @@ type AudioUploadOptions struct {
 	VoiceGender VoiceGender
 }
 
+type AudioTranscriptUploadOptions struct {
+	AdaptTo    []string
+	Glossaries []string
+	Style      TranslationStyle
+	NoTrace    *bool
+}
+
+type AudioTextSegment struct {
+	ID          int     `json:"id"`
+	Start       float64 `json:"start"`
+	End         float64 `json:"end"`
+	Text        string  `json:"text"`
+	Translation string  `json:"translation"`
+}
+
+type AudioTextResult struct {
+	ID          string             `json:"id"`
+	Source      string             `json:"source"`
+	Target      string             `json:"target"`
+	Filename    string             `json:"filename"`
+	Duration    float64            `json:"duration"`
+	Text        string             `json:"text"`
+	Translation string             `json:"translation"`
+	Segments    []AudioTextSegment `json:"segments"`
+}
+
 type QualityEstimationResult struct {
 	Score float64 `json:"score"`
 }

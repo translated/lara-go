@@ -14,6 +14,7 @@ All major translation features are accessible, making it easy to integrate and c
 - **Glossaries**: Enforce terminology standards across translations
 - **Styleguides**: Define tone, voice, and writing style rules for translations
 - **Audio Translation**: Translate audio files with status monitoring
+- **Audio Transcript Translation**: Retrieve translated transcripts with per-segment timings
 - **Image Translation**: Translate whole images or extract and translate text blocks
 - **Language Detection**: Automatic source language identification
 - **Advanced Options**: Translation instructions and more
@@ -148,6 +149,17 @@ go run styleguides_management.go
 ```bash
 cd examples
 go run audio_translation.go
+```
+
+### Audio Transcript Translation
+- **[audio_transcript_translation.go](examples/audio_transcript_translation.go)** - Audio transcript translation examples
+  - Basic transcript translation
+  - Advanced options with memories and glossaries
+  - Step-by-step transcript translation with status monitoring
+
+```bash
+cd examples
+go run audio_transcript_translation.go
 ```
 
 ### Image Translation
@@ -355,6 +367,40 @@ status, err := laraTranslator.Audio.Status(audio.ID)
 
 // Download translated audio
 reader, err := laraTranslator.Audio.Download(audio.ID)
+```
+
+### 🎙️ Audio Transcript Translation
+#### Simple transcript translation
+
+```go
+filePath := "/path/to/your/audio.mp3"
+filename := "audio.mp3"
+source := "en-US"
+target := "fr-FR"
+result, err := laraTranslator.Audio.TranslateTranscript(&filePath, &filename, &source, target)
+```
+
+#### Transcript translation with options
+
+```go
+options := &lara.AudioTranscriptUploadOptions{
+    AdaptTo:    []string{"mem_1A2b3C4d5E6f7G8h9I0jKl"},  // Replace with actual memory IDs
+    Glossaries: []string{"gls_1A2b3C4d5E6f7G8h9I0jKl"},  // Replace with actual glossary IDs
+}
+result, err := laraTranslator.Audio.TranslateTranscriptWithOptions(&filePath, &filename, &source, target, options)
+```
+
+#### Step-by-step transcript translation
+
+```go
+// Upload
+audio, err := laraTranslator.Audio.UploadForTranscription(&filePath, &filename, &source, target)
+
+// Check status
+status, err := laraTranslator.Audio.Status(audio.ID)
+
+// Retrieve translated transcript
+result, err := laraTranslator.Audio.GetTranslatedTranscript(audio.ID)
 ```
 
 ### 🖼️ Image Translation
