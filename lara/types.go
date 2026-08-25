@@ -349,19 +349,21 @@ type Audio struct {
 }
 
 type AudioOptions struct {
-	AdaptTo     []string         `json:"adapt_to,omitempty"`
-	Glossaries  []string         `json:"glossaries,omitempty"`
-	Style       TranslationStyle `json:"style,omitempty"`
-	NoTrace     *bool            `json:"no_trace,omitempty"`
-	VoiceGender VoiceGender      `json:"voice_gender,omitempty"`
+	AdaptTo      []string         `json:"adapt_to,omitempty"`
+	Glossaries   []string         `json:"glossaries,omitempty"`
+	Style        TranslationStyle `json:"style,omitempty"`
+	NoTrace      *bool            `json:"no_trace,omitempty"`
+	VoiceCloning *bool            `json:"voice_cloning,omitempty"`
+	VoiceGender  VoiceGender      `json:"voice_gender,omitempty"`
 }
 
 type AudioUploadOptions struct {
-	AdaptTo     []string
-	Glossaries  []string
-	Style       TranslationStyle
-	NoTrace     *bool
-	VoiceGender VoiceGender
+	AdaptTo      []string
+	Glossaries   []string
+	Style        TranslationStyle
+	NoTrace      *bool
+	VoiceCloning *bool
+	VoiceGender  VoiceGender
 }
 
 type AudioTranscriptUploadOptions struct {

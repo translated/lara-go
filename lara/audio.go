@@ -62,6 +62,9 @@ func (a *AudioTranslator) UploadWithOptions(filePath, filename, source *string, 
 		if options.Style != "" {
 			body["style"] = options.Style
 		}
+		if options.VoiceCloning != nil {
+			body["voice_cloning"] = *options.VoiceCloning
+		}
 		if options.VoiceGender != "" {
 			body["voice_gender"] = options.VoiceGender
 		}
