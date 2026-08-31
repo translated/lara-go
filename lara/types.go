@@ -15,8 +15,30 @@ type Memory struct {
 	Secret             *string    `json:"secret,omitempty"`
 	OwnerID            string     `json:"owner_id"`
 	CollaboratorsCount int        `json:"collaborators_count"`
-	SharedAt           *time.Time `json:"shared_at,omitempty"`
+	SharedAt           time.Time  `json:"shared_at"`
 	IsPersonal         bool       `json:"is_personal"`
+}
+
+type SharePermission string
+
+const (
+	SharePermissionRead      SharePermission = "read"
+	SharePermissionReadWrite SharePermission = "read_write"
+)
+
+type ResourceShareEntry struct {
+	ID          string          `json:"id"`
+	Name        string          `json:"name"`
+	ShareName   string          `json:"share_name"`
+	SharedAt    time.Time       `json:"shared_at"`
+	Permissions SharePermission `json:"permissions"`
+}
+
+type MemoryShares struct {
+	Memory  Memory               `json:"memory"`
+	Account *ResourceShareEntry  `json:"account"`
+	Groups  []ResourceShareEntry `json:"groups"`
+	Users   []ResourceShareEntry `json:"users"`
 }
 
 type Import struct {
@@ -47,12 +69,20 @@ const (
 )
 
 type Glossary struct {
-	ID         string    `json:"id"`
-	Name       string    `json:"name"`
-	OwnerID    string    `json:"owner_id"`
-	CreatedAt  time.Time `json:"created_at"`
-	UpdatedAt  time.Time `json:"updated_at"`
-	IsPersonal bool      `json:"is_personal"`
+	ID         string     `json:"id"`
+	Name       string     `json:"name"`
+	OwnerID    string     `json:"owner_id"`
+	CreatedAt  time.Time  `json:"created_at"`
+	UpdatedAt  time.Time  `json:"updated_at"`
+	SharedAt   time.Time  `json:"shared_at"`
+	IsPersonal bool       `json:"is_personal"`
+}
+
+type GlossaryShares struct {
+	Glossary Glossary             `json:"glossary"`
+	Account  *ResourceShareEntry  `json:"account"`
+	Groups   []ResourceShareEntry `json:"groups"`
+	Users    []ResourceShareEntry `json:"users"`
 }
 
 type GlossaryCounts struct {
@@ -190,13 +220,21 @@ func (g *NGGlossaryMatchGroups) UnmarshalJSON(data []byte) error {
 }
 
 type Styleguide struct {
-	ID         string    `json:"id"`
-	Name       string    `json:"name"`
-	Content    *string   `json:"content,omitempty"`
-	OwnerID    string    `json:"owner_id"`
-	CreatedAt  time.Time `json:"created_at"`
-	UpdatedAt  time.Time `json:"updated_at"`
-	IsPersonal bool      `json:"is_personal"`
+	ID         string     `json:"id"`
+	Name       string     `json:"name"`
+	Content    *string    `json:"content,omitempty"`
+	OwnerID    string     `json:"owner_id"`
+	CreatedAt  time.Time  `json:"created_at"`
+	UpdatedAt  time.Time  `json:"updated_at"`
+	SharedAt   time.Time  `json:"shared_at"`
+	IsPersonal bool       `json:"is_personal"`
+}
+
+type StyleguideShares struct {
+	Styleguide Styleguide           `json:"styleguide"`
+	Account    *ResourceShareEntry  `json:"account"`
+	Groups     []ResourceShareEntry `json:"groups"`
+	Users      []ResourceShareEntry `json:"users"`
 }
 
 type StyleguideChange struct {

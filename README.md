@@ -474,6 +474,15 @@ deleteJob, err := laraTranslator.Memories.DeleteTranslation(
 import "time"
 maxWaitTime := 300 * time.Second // 5 minutes
 completedImport, err := laraTranslator.Memories.WaitForImport(memoryImport, nil, &maxWaitTime)
+
+// Share with the account or a group; shares can be renamed, listed, and revoked
+// Omit the name with AddAccountShare/AddGroupShare to reuse the resource's own name
+teamMemory, err := laraTranslator.Memories.AddAccountShareWithName(memory.ID, "Team memory")
+shares, err := laraTranslator.Memories.GetShares(teamMemory.ID)
+_, err = laraTranslator.Memories.RenameAccountShare(memory.ID, "Company memory")
+_, err = laraTranslator.Memories.AddGroupShareWithName(memory.ID, "grp_1A2b3C4d5E6f7G8h9I0jKl", "Marketing memory")
+_, err = laraTranslator.Memories.RevokeGroupShare(memory.ID, "grp_1A2b3C4d5E6f7G8h9I0jKl")
+_, err = laraTranslator.Memories.RevokeAccountShare(memory.ID)
 ```
 
 ### 📚 Glossary Management
@@ -508,6 +517,11 @@ jobID := exportJob.JobID
 
 // Get glossary terms count
 counts, err := laraTranslator.Glossaries.Counts("gls_1A2b3C4d5E6f7G8h9I0jKl")
+
+// Glossaries support the same account and group sharing workflow
+_, err = laraTranslator.Glossaries.AddAccountShareWithName(glossary.ID, "Team glossary")
+glossaryShares, err := laraTranslator.Glossaries.GetShares(glossary.ID)
+_, err = laraTranslator.Glossaries.RevokeAccountShare(glossary.ID)
 ```
 
 ### 📋 Styleguide Management
@@ -533,6 +547,10 @@ styleguide, err = laraTranslator.Styleguides.Update("stg_1A2b3C4d5E6f7G8h9I0jKl"
 
 // Update both
 styleguide, err = laraTranslator.Styleguides.Update("stg_1A2b3C4d5E6f7G8h9I0jKl", &name, &content)
+
+// Share a styleguide and inspect visible account, group, and user shares
+_, err = laraTranslator.Styleguides.AddGroupShareWithName(styleguide.ID, "grp_1A2b3C4d5E6f7G8h9I0jKl", "Marketing styleguide")
+styleguideShares, err := laraTranslator.Styleguides.GetShares(styleguide.ID)
 
 // Delete styleguide
 styleguide, err = laraTranslator.Styleguides.Delete("stg_1A2b3C4d5E6f7G8h9I0jKl")

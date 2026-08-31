@@ -108,6 +108,78 @@ func (m *MemoriesService) Connect(id string) (*Memory, error) {
 	return &memories[0], nil
 }
 
+func (m *MemoriesService) GetShares(id string) (*MemoryShares, error) {
+	var shares MemoryShares
+	err := m.client.Get(fmt.Sprintf("/v2/memories/%s/shares", id), nil, nil, &shares)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get memory shares: %w", err)
+	}
+	return &shares, nil
+}
+
+func (m *MemoriesService) AddAccountShare(id string) (*Memory, error) {
+	return m.accountShare("POST", id, nil)
+}
+
+func (m *MemoriesService) AddAccountShareWithName(id, name string) (*Memory, error) {
+	return m.accountShare("POST", id, &name)
+}
+
+func (m *MemoriesService) RenameAccountShare(id, name string) (*Memory, error) {
+	return m.accountShare("PUT", id, &name)
+}
+
+func (m *MemoriesService) RevokeAccountShare(id string) (*Memory, error) {
+	return m.accountShare("DELETE", id, nil)
+}
+
+func (m *MemoriesService) AddGroupShare(id, groupID string) (*Memory, error) {
+	return m.groupShare("POST", id, groupID, nil)
+}
+
+func (m *MemoriesService) AddGroupShareWithName(id, groupID, name string) (*Memory, error) {
+	return m.groupShare("POST", id, groupID, &name)
+}
+
+func (m *MemoriesService) RenameGroupShare(id, groupID, name string) (*Memory, error) {
+	return m.groupShare("PUT", id, groupID, &name)
+}
+
+func (m *MemoriesService) RevokeGroupShare(id, groupID string) (*Memory, error) {
+	return m.groupShare("DELETE", id, groupID, nil)
+}
+
+func (m *MemoriesService) accountShare(method, id string, name *string) (*Memory, error) {
+	return m.share(method, fmt.Sprintf("/v2/memories/%s/shares", id), name)
+}
+
+func (m *MemoriesService) groupShare(method, id, groupID string, name *string) (*Memory, error) {
+	return m.share(method, fmt.Sprintf("/v2/memories/%s/shares/groups/%s", id, groupID), name)
+}
+
+func (m *MemoriesService) share(method, path string, name *string) (*Memory, error) {
+	body := map[string]interface{}{}
+	if name != nil {
+		body["name"] = *name
+	}
+	var memory Memory
+	var err error
+	switch method {
+	case "POST":
+		err = m.client.Post(path, body, nil, nil, &memory)
+	case "PUT":
+		err = m.client.Put(path, body, nil, nil, &memory)
+	case "DELETE":
+		err = m.client.Delete(path, nil, nil, &memory)
+	default:
+		return nil, fmt.Errorf("unsupported method %q for memory share", method)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to update memory share: %w", err)
+	}
+	return &memory, nil
+}
+
 func (m *MemoriesService) ImportTmxFromPath(id, tmxPath string) (*MemoryImport, error) {
 	return m.ImportTmxFromPathWithCallback(id, tmxPath, false, "")
 }

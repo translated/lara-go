@@ -18,6 +18,7 @@ import (
  * - Multiple memory operations
  * - TMX file import with progress monitoring
  * - Translation deletion
+ * - Sharing a memory with the account or a group (add, rename, list, revoke)
  * - Translation with TUID and context
  */
 
@@ -188,6 +189,76 @@ func main() {
 		log.Printf("Error deleting translation: %v", err)
 	} else {
 		fmt.Printf("🗑️  Deleted translation unit (Job ID: %s)\n", deleteJob.ID)
+	}
+	fmt.Println()
+
+	// Example 8: Memory sharing
+	// Sharing requires a multi-user account and the appropriate role (account owner for
+	// account-wide shares, owner/admin for group shares). Each call returns the shared
+	// memory, whose Name reflects the shared copy's name and SharedAt the share time.
+	fmt.Println("=== Memory Sharing ===")
+
+	// Share with the whole account/team; plain AddAccountShare reuses the memory's own name
+	teamShare, err := laraTranslator.Memories.AddAccountShareWithName(memory.ID, "Shared with the team")
+	if err != nil {
+		log.Printf("Error sharing memory with the account: %v", err)
+	} else {
+		fmt.Printf("🤝 Shared with the account as: '%s' (shared at %s)\n", teamShare.Name, teamShare.SharedAt)
+	}
+
+	// Rename the account/team share
+	renamedTeamShare, err := laraTranslator.Memories.RenameAccountShare(memory.ID, "Team memory")
+	if err != nil {
+		log.Printf("Error renaming the account share: %v", err)
+	} else {
+		fmt.Printf("📝 Renamed account share to: '%s'\n", renamedTeamShare.Name)
+	}
+
+	// List every share visible to the caller: the account share, group shares and user shares
+	shares, err := laraTranslator.Memories.GetShares(memory.ID)
+	if err != nil {
+		log.Printf("Error listing memory shares: %v", err)
+	} else {
+		if shares.Account != nil {
+			fmt.Printf("👥 Account share '%s' (%s)\n", shares.Account.ShareName, shares.Account.Permissions)
+		}
+		for _, group := range shares.Groups {
+			fmt.Printf("👥 Group %s: '%s' (%s)\n", group.Name, group.ShareName, group.Permissions)
+		}
+		for _, user := range shares.Users {
+			fmt.Printf("👤 User %s: '%s' (%s)\n", user.Name, user.ShareName, user.Permissions)
+		}
+	}
+
+	// Revoke the account/team share
+	if _, err = laraTranslator.Memories.RevokeAccountShare(memory.ID); err != nil {
+		log.Printf("Error revoking the account share: %v", err)
+	} else {
+		fmt.Println("🚫 Revoked the account share")
+	}
+
+	// Group shares work the same way, addressed by a group ID (grp_...)
+	if groupID := os.Getenv("LARA_GROUP_ID"); groupID != "" {
+		groupShare, groupErr := laraTranslator.Memories.AddGroupShareWithName(memory.ID, groupID, "Shared with the group")
+		if groupErr != nil {
+			log.Printf("Error sharing memory with the group: %v", groupErr)
+		} else {
+			fmt.Printf("🤝 Shared with group %s as: '%s'\n", groupID, groupShare.Name)
+		}
+
+		if _, groupErr = laraTranslator.Memories.RenameGroupShare(memory.ID, groupID, "Marketing group"); groupErr != nil {
+			log.Printf("Error renaming the group share: %v", groupErr)
+		} else {
+			fmt.Println("📝 Renamed the group share")
+		}
+
+		if _, groupErr = laraTranslator.Memories.RevokeGroupShare(memory.ID, groupID); groupErr != nil {
+			log.Printf("Error revoking the group share: %v", groupErr)
+		} else {
+			fmt.Println("🚫 Revoked the group share")
+		}
+	} else {
+		fmt.Println("Set LARA_GROUP_ID to try the group sharing methods.")
 	}
 	fmt.Println()
 

@@ -75,6 +75,70 @@ func (g *GlossariesService) Update(id, name string) (*Glossary, error) {
 	return &glossary, nil
 }
 
+func (g *GlossariesService) GetShares(id string) (*GlossaryShares, error) {
+	var shares GlossaryShares
+	err := g.client.Get(fmt.Sprintf("/v2/glossaries/%s/shares", id), nil, nil, &shares)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get glossary shares: %w", err)
+	}
+	return &shares, nil
+}
+
+func (g *GlossariesService) AddAccountShare(id string) (*Glossary, error) {
+	return g.share("POST", fmt.Sprintf("/v2/glossaries/%s/shares", id), nil)
+}
+
+func (g *GlossariesService) AddAccountShareWithName(id, name string) (*Glossary, error) {
+	return g.share("POST", fmt.Sprintf("/v2/glossaries/%s/shares", id), &name)
+}
+
+func (g *GlossariesService) RenameAccountShare(id, name string) (*Glossary, error) {
+	return g.share("PUT", fmt.Sprintf("/v2/glossaries/%s/shares", id), &name)
+}
+
+func (g *GlossariesService) RevokeAccountShare(id string) (*Glossary, error) {
+	return g.share("DELETE", fmt.Sprintf("/v2/glossaries/%s/shares", id), nil)
+}
+
+func (g *GlossariesService) AddGroupShare(id, groupID string) (*Glossary, error) {
+	return g.share("POST", fmt.Sprintf("/v2/glossaries/%s/shares/groups/%s", id, groupID), nil)
+}
+
+func (g *GlossariesService) AddGroupShareWithName(id, groupID, name string) (*Glossary, error) {
+	return g.share("POST", fmt.Sprintf("/v2/glossaries/%s/shares/groups/%s", id, groupID), &name)
+}
+
+func (g *GlossariesService) RenameGroupShare(id, groupID, name string) (*Glossary, error) {
+	return g.share("PUT", fmt.Sprintf("/v2/glossaries/%s/shares/groups/%s", id, groupID), &name)
+}
+
+func (g *GlossariesService) RevokeGroupShare(id, groupID string) (*Glossary, error) {
+	return g.share("DELETE", fmt.Sprintf("/v2/glossaries/%s/shares/groups/%s", id, groupID), nil)
+}
+
+func (g *GlossariesService) share(method, path string, name *string) (*Glossary, error) {
+	body := map[string]interface{}{}
+	if name != nil {
+		body["name"] = *name
+	}
+	var glossary Glossary
+	var err error
+	switch method {
+	case "POST":
+		err = g.client.Post(path, body, nil, nil, &glossary)
+	case "PUT":
+		err = g.client.Put(path, body, nil, nil, &glossary)
+	case "DELETE":
+		err = g.client.Delete(path, nil, nil, &glossary)
+	default:
+		return nil, fmt.Errorf("unsupported method %q for glossary share", method)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to update glossary share: %w", err)
+	}
+	return &glossary, nil
+}
+
 func (g *GlossariesService) ImportCsvFromPath(id string, csvPath string) (*GlossaryImport, error) {
 	return g.ImportCsvFromPathWithFormat(id, csvPath, GlossaryFileFormatCsvTableUni)
 }

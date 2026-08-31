@@ -15,6 +15,7 @@ import (
  * - Create, list, get, update, delete styleguides
  * - Update name, content, or both at once
  * - Handling of non-existent styleguides
+ * - Sharing a styleguide with the account or a group (add, rename, list, revoke)
  */
 
 func main() {
@@ -102,6 +103,76 @@ func main() {
 			log.Printf("Error getting styleguide: %v", err)
 		} else if missing == nil {
 			fmt.Println("ℹ️  Styleguide not found (returned nil as expected)")
+		}
+		fmt.Println()
+
+		// Example 5: Styleguide sharing
+		// Sharing requires a multi-user account and the appropriate role (account owner for
+		// account-wide shares, owner/admin for group shares). Each call returns the shared
+		// styleguide, whose Name reflects the shared copy's name and SharedAt the share time.
+		fmt.Println("=== Styleguide Sharing ===")
+
+		// Share with the whole account/team; plain AddAccountShare reuses the styleguide's own name
+		teamShare, err := laraTranslator.Styleguides.AddAccountShareWithName(styleguideID, "Shared with the team")
+		if err != nil {
+			log.Printf("Error sharing styleguide with the account: %v", err)
+		} else {
+			fmt.Printf("🤝 Shared with the account as: '%s' (shared at %s)\n", teamShare.Name, teamShare.SharedAt)
+		}
+
+		// Rename the account/team share
+		renamedTeamShare, err := laraTranslator.Styleguides.RenameAccountShare(styleguideID, "Team styleguide")
+		if err != nil {
+			log.Printf("Error renaming the account share: %v", err)
+		} else {
+			fmt.Printf("📝 Renamed account share to: '%s'\n", renamedTeamShare.Name)
+		}
+
+		// List every share visible to the caller: the account share, group shares and user shares
+		shares, err := laraTranslator.Styleguides.GetShares(styleguideID)
+		if err != nil {
+			log.Printf("Error listing styleguide shares: %v", err)
+		} else {
+			if shares.Account != nil {
+				fmt.Printf("👥 Account share '%s' (%s)\n", shares.Account.ShareName, shares.Account.Permissions)
+			}
+			for _, group := range shares.Groups {
+				fmt.Printf("👥 Group %s: '%s' (%s)\n", group.Name, group.ShareName, group.Permissions)
+			}
+			for _, user := range shares.Users {
+				fmt.Printf("👤 User %s: '%s' (%s)\n", user.Name, user.ShareName, user.Permissions)
+			}
+		}
+
+		// Revoke the account/team share
+		if _, err = laraTranslator.Styleguides.RevokeAccountShare(styleguideID); err != nil {
+			log.Printf("Error revoking the account share: %v", err)
+		} else {
+			fmt.Println("🚫 Revoked the account share")
+		}
+
+		// Group shares work the same way, addressed by a group ID (grp_...)
+		if groupID := os.Getenv("LARA_GROUP_ID"); groupID != "" {
+			groupShare, groupErr := laraTranslator.Styleguides.AddGroupShareWithName(styleguideID, groupID, "Shared with the group")
+			if groupErr != nil {
+				log.Printf("Error sharing styleguide with the group: %v", groupErr)
+			} else {
+				fmt.Printf("🤝 Shared with group %s as: '%s'\n", groupID, groupShare.Name)
+			}
+
+			if _, groupErr = laraTranslator.Styleguides.RenameGroupShare(styleguideID, groupID, "Marketing group"); groupErr != nil {
+				log.Printf("Error renaming the group share: %v", groupErr)
+			} else {
+				fmt.Println("📝 Renamed the group share")
+			}
+
+			if _, groupErr = laraTranslator.Styleguides.RevokeGroupShare(styleguideID, groupID); groupErr != nil {
+				log.Printf("Error revoking the group share: %v", groupErr)
+			} else {
+				fmt.Println("🚫 Revoked the group share")
+			}
+		} else {
+			fmt.Println("Set LARA_GROUP_ID to try the group sharing methods.")
 		}
 		fmt.Println()
 
