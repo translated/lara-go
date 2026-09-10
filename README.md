@@ -496,7 +496,7 @@ glossaryFilePath := "/path/to/your/glossary.csv"
 glossaryImport, err := laraTranslator.Glossaries.ImportFileFromPath("gls_1A2b3C4d5E6f7G8h9I0jKl", glossaryFilePath,
     &lara.GlossaryImportOptions{ContentType: lara.GlossaryFileFormatCsvTableUni})
 
-// Pass nil options for unidirectional CSV and gzip detection from the filename.
+// Pass nil options for unidirectional CSV.
 // A callback can be supplied independently:
 // laraTranslator.Glossaries.ImportFileFromPath(glossary.ID, glossaryFilePath,
 //     &lara.GlossaryImportOptions{CallbackURL: callbackURL})

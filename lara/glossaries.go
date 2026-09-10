@@ -3,7 +3,6 @@ package lara
 import (
 	"fmt"
 	"os"
-	"strings"
 	"time"
 )
 
@@ -153,7 +152,7 @@ func (g *GlossariesService) ImportFileFromPath(id string, filePath string, optio
 // ImportFile imports an open file without closing it. Nil options use the defaults.
 func (g *GlossariesService) ImportFile(id string, file *os.File, options *GlossaryImportOptions) (*GlossaryImport, error) {
 	contentType := GlossaryFileFormatCsvTableUni
-	isGzipped := strings.HasSuffix(strings.ToLower(file.Name()), ".gz")
+	isGzipped := false
 	callbackURL := ""
 	if options != nil {
 		if options.ContentType != "" {

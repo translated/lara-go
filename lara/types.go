@@ -102,7 +102,7 @@ const (
 type GlossaryImportOptions struct {
 	// Empty uses GlossaryFileFormatCsvTableUni.
 	ContentType GlossaryFileFormat
-	// Nil detects gzip from the filename; true marks an already compressed file.
+	// Whether the supplied file is already gzip-compressed. Nil defaults to false.
 	Gzip *bool
 	// Empty disables completion notifications.
 	CallbackURL string
