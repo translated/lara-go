@@ -491,12 +491,18 @@ _, err = laraTranslator.Memories.RevokeAccountShare(memory.ID)
 // Create glossary
 glossary, err := laraTranslator.Glossaries.Create("MyGlossary")
 
-// Import CSV from file
-csvFilePath := "/path/to/your/glossary.csv"  // Replace with actual CSV file path
-glossaryImport, err := laraTranslator.Glossaries.ImportCsvFromPath("gls_1A2b3C4d5E6f7G8h9I0jKl", csvFilePath)
+// Import a glossary file (use GlossaryFileFormatTbx for TBX files)
+glossaryFilePath := "/path/to/your/glossary.csv"
+glossaryImport, err := laraTranslator.Glossaries.ImportFileFromPath("gls_1A2b3C4d5E6f7G8h9I0jKl", glossaryFilePath,
+    &lara.GlossaryImportOptions{ContentType: lara.GlossaryFileFormatCsvTableUni})
+
+// Pass nil options for unidirectional CSV and gzip detection from the filename.
+// A callback can be supplied independently:
+// laraTranslator.Glossaries.ImportFileFromPath(glossary.ID, glossaryFilePath,
+//     &lara.GlossaryImportOptions{CallbackURL: callbackURL})
 
 // Check import status
-importStatus, err := laraTranslator.Glossaries.GetImportStatus("gls_1A2b3C4d5E6f7G8h9I0jKl")
+importStatus, err := laraTranslator.Glossaries.GetImportStatus(glossaryImport.ID)
 
 // Wait for import completion
 import "time"
@@ -504,14 +510,15 @@ maxWaitTime := 300 * time.Second // 5 minutes
 completedImport, err := laraTranslator.Glossaries.WaitForImport(glossaryImport, nil, &maxWaitTime)
 
 // Export glossary
-csvData, err := laraTranslator.Glossaries.Export("gls_1A2b3C4d5E6f7G8h9I0jKl", "csv/table-uni", "en-US")
+source := "en-US"
+csvData, err := laraTranslator.Glossaries.Export("gls_1A2b3C4d5E6f7G8h9I0jKl", "csv/table-uni", &source)
 
 // Async glossary export - returns a job ID; the result is delivered to your callback URL when ready
 exportJob, err := laraTranslator.Glossaries.ExportAsync(
     "gls_1A2b3C4d5E6f7G8h9I0jKl",
     "https://your-server.example.com/lara/export-callback",
     "csv/table-uni",
-    "en-US",
+    &source,
 )
 jobID := exportJob.JobID
 

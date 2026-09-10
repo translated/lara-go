@@ -249,7 +249,11 @@ func (c *Client) doRequest(method, path string, params map[string]string, body i
 		w := multipart.NewWriter(&b)
 		for field, f := range files {
 			filename := filepath.Base(f.Name())
-			mimeType := mime.TypeByExtension(filepath.Ext(filename))
+			extension := strings.ToLower(filepath.Ext(filename))
+			mimeType := mime.TypeByExtension(extension)
+			if extension == ".tbx" {
+				mimeType = "application/xml"
+			}
 			if mimeType == "" {
 				mimeType = "application/octet-stream"
 			}

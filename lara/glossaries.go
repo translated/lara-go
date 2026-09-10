@@ -139,36 +139,31 @@ func (g *GlossariesService) share(method, path string, name *string) (*Glossary,
 	return &glossary, nil
 }
 
-func (g *GlossariesService) ImportCsvFromPath(id string, csvPath string) (*GlossaryImport, error) {
-	return g.ImportCsvFromPathWithFormat(id, csvPath, GlossaryFileFormatCsvTableUni)
-}
-
-func (g *GlossariesService) ImportCsvFromPathWithFormat(id string, csvPath string, contentType GlossaryFileFormat) (*GlossaryImport, error) {
-	return g.ImportCsvFromPathWithFormatAndCallback(id, csvPath, contentType, "")
-}
-
-func (g *GlossariesService) ImportCsvFromPathWithFormatAndCallback(id string, csvPath string, contentType GlossaryFileFormat, callbackUrl string) (*GlossaryImport, error) {
-	file, err := os.Open(csvPath)
+// ImportFileFromPath opens and imports a file. Nil options use the defaults.
+func (g *GlossariesService) ImportFileFromPath(id string, filePath string, options *GlossaryImportOptions) (*GlossaryImport, error) {
+	file, err := os.Open(filePath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open CSV file: %w", err)
+		return nil, fmt.Errorf("failed to open glossary file: %w", err)
 	}
 	defer file.Close()
 
-	return g.ImportCsvWithFormatAndCallback(id, file, contentType, callbackUrl)
+	return g.ImportFile(id, file, options)
 }
 
-func (g *GlossariesService) ImportCsv(id string, csv *os.File) (*GlossaryImport, error) {
-	return g.ImportCsvWithFormat(id, csv, GlossaryFileFormatCsvTableUni)
-}
-
-func (g *GlossariesService) ImportCsvWithFormat(id string, csv *os.File, contentType GlossaryFileFormat) (*GlossaryImport, error) {
-	return g.ImportCsvWithFormatAndCallback(id, csv, contentType, "")
-}
-
-func (g *GlossariesService) ImportCsvWithFormatAndCallback(id string, csv *os.File, contentType GlossaryFileFormat, callbackUrl string) (*GlossaryImport, error) {
-	// Auto-detect gzip compression based on filename (like Java SDK)
-	fileName := csv.Name()
-	isGzipped := strings.HasSuffix(strings.ToLower(fileName), ".gz")
+// ImportFile imports an open file without closing it. Nil options use the defaults.
+func (g *GlossariesService) ImportFile(id string, file *os.File, options *GlossaryImportOptions) (*GlossaryImport, error) {
+	contentType := GlossaryFileFormatCsvTableUni
+	isGzipped := strings.HasSuffix(strings.ToLower(file.Name()), ".gz")
+	callbackURL := ""
+	if options != nil {
+		if options.ContentType != "" {
+			contentType = options.ContentType
+		}
+		if options.Gzip != nil {
+			isGzipped = *options.Gzip
+		}
+		callbackURL = options.CallbackURL
+	}
 
 	body := map[string]interface{}{
 		"content_type": string(contentType),
@@ -176,20 +171,69 @@ func (g *GlossariesService) ImportCsvWithFormatAndCallback(id string, csv *os.Fi
 	if isGzipped {
 		body["compression"] = "gzip"
 	}
-	if callbackUrl != "" {
-		body["callback_url"] = callbackUrl
+	if callbackURL != "" {
+		body["callback_url"] = callbackURL
 	}
 
 	files := map[string]*os.File{
-		"csv": csv,
+		"csv": file,
 	}
 
 	var glossaryImport GlossaryImport
 	err := g.client.Post(fmt.Sprintf("/v2/glossaries/%s/import", id), body, files, nil, &glossaryImport)
 	if err != nil {
-		return nil, fmt.Errorf("failed to import CSV to glossary: %w", err)
+		return nil, fmt.Errorf("failed to import glossary file: %w", err)
 	}
 	return &glossaryImport, nil
+}
+
+// Deprecated: use ImportFileFromPath instead.
+func (g *GlossariesService) ImportCsvFromPath(id string, csvPath string) (*GlossaryImport, error) {
+	return g.ImportFileFromPath(id, csvPath, nil)
+}
+
+// Deprecated: use ImportFileFromPath with GlossaryImportOptions instead.
+func (g *GlossariesService) ImportCsvFromPathWithFormat(id string, csvPath string, contentType GlossaryFileFormat) (*GlossaryImport, error) {
+	if err := validateCsvImportFormat(contentType); err != nil {
+		return nil, err
+	}
+	return g.ImportFileFromPath(id, csvPath, &GlossaryImportOptions{ContentType: contentType})
+}
+
+// Deprecated: use ImportFileFromPath with GlossaryImportOptions instead.
+func (g *GlossariesService) ImportCsvFromPathWithFormatAndCallback(id string, csvPath string, contentType GlossaryFileFormat, callbackUrl string) (*GlossaryImport, error) {
+	if err := validateCsvImportFormat(contentType); err != nil {
+		return nil, err
+	}
+	return g.ImportFileFromPath(id, csvPath, &GlossaryImportOptions{ContentType: contentType, CallbackURL: callbackUrl})
+}
+
+// Deprecated: use ImportFile instead.
+func (g *GlossariesService) ImportCsv(id string, csv *os.File) (*GlossaryImport, error) {
+	return g.ImportFile(id, csv, nil)
+}
+
+// Deprecated: use ImportFile with GlossaryImportOptions instead.
+func (g *GlossariesService) ImportCsvWithFormat(id string, csv *os.File, contentType GlossaryFileFormat) (*GlossaryImport, error) {
+	if err := validateCsvImportFormat(contentType); err != nil {
+		return nil, err
+	}
+	return g.ImportFile(id, csv, &GlossaryImportOptions{ContentType: contentType})
+}
+
+// Deprecated: use ImportFile with GlossaryImportOptions instead.
+func (g *GlossariesService) ImportCsvWithFormatAndCallback(id string, csv *os.File, contentType GlossaryFileFormat, callbackUrl string) (*GlossaryImport, error) {
+	if err := validateCsvImportFormat(contentType); err != nil {
+		return nil, err
+	}
+	return g.ImportFile(id, csv, &GlossaryImportOptions{ContentType: contentType, CallbackURL: callbackUrl})
+}
+
+func validateCsvImportFormat(contentType GlossaryFileFormat) error {
+	if contentType != GlossaryFileFormatCsvTableUni && contentType != GlossaryFileFormatCsvTableMulti {
+		return fmt.Errorf("CSV import methods only support CSV formats; use ImportFile methods for TBX files")
+	}
+	return nil
 }
 
 func (g *GlossariesService) GetImportStatus(id string) (*GlossaryImport, error) {

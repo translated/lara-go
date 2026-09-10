@@ -96,7 +96,7 @@ func main() {
 
 		if _, err := os.Stat(csvFilePath); err == nil {
 			fmt.Printf("Importing CSV file: %s\n", filepath.Base(csvFilePath))
-			csvImport, err := laraTranslator.Glossaries.ImportCsvFromPath(glossary.ID, csvFilePath)
+			csvImport, err := laraTranslator.Glossaries.ImportFileFromPath(glossary.ID, csvFilePath, nil)
 			if err != nil {
 				log.Printf("Error with CSV import: %v", err)
 			} else {
@@ -131,8 +131,8 @@ func main() {
 		fmt.Println("=== CSV Import with Callback URL ===")
 		if _, err := os.Stat(csvFilePath); err == nil {
 			callbackUrl := "https://your-server.example.com/lara/import-callback" // Replace with your endpoint
-			// Note: the callback variants require an explicit content type, so pass one even for the default format.
-			importWithCallback, err := laraTranslator.Glossaries.ImportCsvFromPathWithFormatAndCallback(glossary.ID, csvFilePath, "csv/table-uni", callbackUrl)
+			importWithCallback, err := laraTranslator.Glossaries.ImportFileFromPath(glossary.ID, csvFilePath,
+				&lara.GlossaryImportOptions{CallbackURL: callbackUrl})
 			if err != nil {
 				log.Printf("Error starting CSV import with callback: %v", err)
 			} else {
