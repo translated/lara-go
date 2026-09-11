@@ -41,7 +41,7 @@ func newClient(auth interface{}, baseURL, sessionID string) *Client {
 		baseURL:    strings.TrimRight(baseURL, "/"),
 		httpClient: &http.Client{},
 		sdkName:    "lara-go",
-		sdkVersion: "1.7.0",
+		sdkVersion: "1.8.0",
 		sessionID:  sessionID,
 	}
 
