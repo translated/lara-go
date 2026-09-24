@@ -82,7 +82,9 @@ func main() {
 	// Example 3: Extract and translate text from an image
 	fmt.Println("=== Extract and Translate Text ===")
 
-	results, err := laraTranslator.Images.TranslateText(&sampleFilePath, &sourceLang, targetLang)
+	includeLayout := true
+	results, err := laraTranslator.Images.TranslateTextWithOptions(&sampleFilePath, &sourceLang, targetLang,
+		&lara.ImageTextTranslateOptions{IncludeLayout: &includeLayout})
 	if err != nil {
 		log.Printf("Error extracting and translating text: %v", err)
 		return
@@ -96,4 +98,16 @@ func main() {
 		fmt.Printf("Original: %s\n", result.Text)
 		fmt.Printf("Translated: %s\n", result.Translation)
 	}
+	// IncludeLayout guarantees the metadata required by classic rendering models.
+	// You can edit results.Paragraphs[i].Translation while retaining its layout.
+	rendered, err := laraTranslator.Images.RenderTranslatedWithOptions(
+		&sampleFilePath, &results.SourceLanguage, targetLang, results.Paragraphs,
+		&lara.ImageRenderOptions{Model: lara.TextRemovalOverlay})
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := os.WriteFile("rendered_image.png", rendered, 0644); err != nil {
+		log.Fatal(err)
+	}
+
 }

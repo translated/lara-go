@@ -242,12 +242,17 @@ func (c *Client) doRequest(method, path string, params map[string]string, body i
 
 	var bodyReader io.Reader
 	var contentMD5, contentType string
+	fileOffsets := make(map[string]int64, len(files))
 
 	if len(files) > 0 {
 		// Multipart form
 		var b bytes.Buffer
 		w := multipart.NewWriter(&b)
 		for field, f := range files {
+			offset, err := f.Seek(0, io.SeekCurrent)
+			if err == nil {
+				fileOffsets[field] = offset
+			}
 			filename := filepath.Base(f.Name())
 			extension := strings.ToLower(filepath.Ext(filename))
 			mimeType := mime.TypeByExtension(extension)
@@ -358,6 +363,16 @@ func (c *Client) doRequest(method, path string, params map[string]string, body i
 		c.token = ""
 		if err := c.refreshOrReauthenticate(); err != nil {
 			return nil, fmt.Errorf("token refresh failed: %w", err)
+		}
+		// Multipart encoding consumed the files; replay the same bytes after refresh.
+		for field := range files {
+			offset, ok := fileOffsets[field]
+			if !ok {
+				return nil, fmt.Errorf("cannot retry upload of non-seekable file %s", field)
+			}
+			if _, err := files[field].Seek(offset, io.SeekStart); err != nil {
+				return nil, fmt.Errorf("failed to rewind file for retry: %w", err)
+			}
 		}
 		return c.doRequest(method, path, params, body, files, headers, retryCount+1)
 	}

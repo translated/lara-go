@@ -417,6 +417,30 @@ imageBytes, err := laraTranslator.Images.Translate(&filePath, &source, target)
 result, err := laraTranslator.Images.TranslateText(&filePath, &source, target)
 ```
 
+Request layout to preserve paragraph positions, line boxes, colors, direction, and alignment:
+
+```go
+includeLayout := true
+result, err := laraTranslator.Images.TranslateTextWithOptions(&filePath, &source, target,
+    &lara.ImageTextTranslateOptions{IncludeLayout: &includeLayout})
+if err != nil { log.Fatal(err) }
+if len(result.Paragraphs) > 0 {
+    result.Paragraphs[0].Translation = "Bonjour !"
+}
+rendered, err := laraTranslator.Images.RenderTranslatedWithOptions(
+    &filePath, &result.SourceLanguage, target, result.Paragraphs,
+    &lara.ImageRenderOptions{Model: lara.TextRemovalOverlay})
+if err != nil { log.Fatal(err) }
+if err := os.WriteFile("rendered.png", rendered, 0644); err != nil { log.Fatal(err) }
+```
+
+`IncludeLayout` is independent of `Verbose`; when it is `true`, every paragraph contains complete
+layout metadata and can be passed directly to `overlay` or `inpainting` rendering.
+Rendering uses the supplied translations without translating again and defaults to `generative_fast`.
+Use `RenderTranslatedWithOptions` and `ImageRenderOptions` to choose a model or set `NoTrace`.
+`overlay` and `inpainting` require `BBox`, `LinesBBoxes`, `TextInfo`, and `Alignment` on every paragraph.
+Generative models accept text-only paragraphs or complete layout. Memory and glossary matches are omitted from rendering requests.
+
 ### 🧠 Memory Management
 
 ```go

@@ -471,6 +471,31 @@ type ImageTextTranslateOptions struct {
 	Style      TranslationStyle
 	NoTrace    *bool
 	Verbose    *bool
+	// IncludeLayout includes complete paragraph geometry and text styling when true,
+	// independently of Verbose.
+	IncludeLayout *bool
+}
+
+// ImageBBox contains the four corners of a paragraph or line in pixel coordinates.
+type ImageBBox struct {
+	TopLeft     [2]int `json:"top_left"`
+	TopRight    [2]int `json:"top_right"`
+	BottomRight [2]int `json:"bottom_right"`
+	BottomLeft  [2]int `json:"bottom_left"`
+}
+
+// ImageTextInfo describes the original text's direction and colors.
+type ImageTextInfo struct {
+	Direction       string `json:"direction"` // ltr, rtl, or ttb
+	TextColor       string `json:"text_color"`
+	BackgroundColor string `json:"background_color"`
+}
+
+// ImageRenderOptions configures rendering without translating the text again.
+type ImageRenderOptions struct {
+	// Model defaults to generative_fast. Overlay and inpainting require full layout.
+	Model   TextRemoval
+	NoTrace *bool
 }
 
 type ImageParagraph struct {
@@ -478,6 +503,11 @@ type ImageParagraph struct {
 	Translation       string            `json:"translation"`
 	AdaptedToMatches  []NGMemoryMatch   `json:"adapted_to_matches,omitempty"`
 	GlossariesMatches []NGGlossaryMatch `json:"glossaries_matches,omitempty"`
+	// Layout fields are populated on every paragraph when IncludeLayout is true.
+	BBox        *ImageBBox     `json:"bbox,omitempty"`
+	LinesBBoxes []ImageBBox    `json:"lines_bboxes,omitempty"`
+	TextInfo    *ImageTextInfo `json:"text_info,omitempty"`
+	Alignment   string         `json:"alignment,omitempty"` // left, center, or right
 }
 
 type ImageTextResult struct {
