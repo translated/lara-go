@@ -32,7 +32,7 @@ jobs:
           fi
 
       - name: Build Go module
-        run: go build
+        run: go build ./...
 
       - name: Publish to Go proxy
         env:

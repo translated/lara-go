@@ -1,1 +1,5 @@
 lara-go
+
+# Python version tool
+__pycache__/
+*.py[cod]
