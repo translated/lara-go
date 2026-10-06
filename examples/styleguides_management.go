@@ -134,13 +134,13 @@ func main() {
 			log.Printf("Error listing styleguide shares: %v", err)
 		} else {
 			if shares.Account != nil {
-				fmt.Printf("👥 Account share '%s' (%s)\n", shares.Account.ShareName, shares.Account.Permissions)
+				fmt.Printf("👥 Account share '%s' (%s)\n", shares.Account.ShareName, shares.Account.PermissionMask)
 			}
 			for _, group := range shares.Groups {
-				fmt.Printf("👥 Group %s: '%s' (%s)\n", group.Name, group.ShareName, group.Permissions)
+				fmt.Printf("👥 Group %s: '%s' (%s)\n", group.Name, group.ShareName, group.PermissionMask)
 			}
 			for _, user := range shares.Users {
-				fmt.Printf("👤 User %s: '%s' (%s)\n", user.Name, user.ShareName, user.Permissions)
+				fmt.Printf("👤 User %s: '%s' (%s)\n", user.Name, user.ShareName, user.PermissionMask)
 			}
 		}
 

@@ -7,31 +7,42 @@ import (
 )
 
 type Memory struct {
-	ID                 string     `json:"id"`
-	CreatedAt          time.Time  `json:"created_at"`
-	UpdatedAt          time.Time  `json:"updated_at"`
-	Name               string     `json:"name"`
-	ExternalID         *string    `json:"external_id,omitempty"`
-	Secret             *string    `json:"secret,omitempty"`
-	OwnerID            string     `json:"owner_id"`
-	CollaboratorsCount int        `json:"collaborators_count"`
-	SharedAt           time.Time  `json:"shared_at"`
-	IsPersonal         bool       `json:"is_personal"`
+	ID                 string    `json:"id"`
+	CreatedAt          time.Time `json:"created_at"`
+	UpdatedAt          time.Time `json:"updated_at"`
+	Name               string    `json:"name"`
+	ExternalID         *string   `json:"external_id,omitempty"`
+	Secret             *string   `json:"secret,omitempty"`
+	OwnerID            string    `json:"owner_id"`
+	CollaboratorsCount int       `json:"collaborators_count"`
+	SharedAt           time.Time `json:"shared_at"`
+	IsPersonal         bool      `json:"is_personal"`
+	// Effective combined mask in GET list/detail; selected share's stored mask in GET /shares.
+	// Nil when omitted, including non-GET responses.
+	PermissionMask *PermissionMask `json:"permission_mask,omitempty"`
 }
 
-type SharePermission string
+// PermissionMask uses read, write, export, share order; a dash means absent.
+type PermissionMask string
 
 const (
-	SharePermissionRead      SharePermission = "read"
-	SharePermissionReadWrite SharePermission = "read_write"
+	PermissionMaskRead                 PermissionMask = "r---"
+	PermissionMaskReadWrite            PermissionMask = "rw--"
+	PermissionMaskReadExport           PermissionMask = "r-e-"
+	PermissionMaskReadShare            PermissionMask = "r--s"
+	PermissionMaskReadWriteExport      PermissionMask = "rwe-"
+	PermissionMaskReadWriteShare       PermissionMask = "rw-s"
+	PermissionMaskReadExportShare      PermissionMask = "r-es"
+	PermissionMaskReadWriteExportShare PermissionMask = "rwes"
 )
 
 type ResourceShareEntry struct {
-	ID          string          `json:"id"`
-	Name        string          `json:"name"`
-	ShareName   string          `json:"share_name"`
-	SharedAt    time.Time       `json:"shared_at"`
-	Permissions SharePermission `json:"permissions"`
+	ID        string    `json:"id"`
+	Name      string    `json:"name"`
+	ShareName string    `json:"share_name"`
+	SharedAt  time.Time `json:"shared_at"`
+	// The permissions stored on this share.
+	PermissionMask PermissionMask `json:"permission_mask"`
 }
 
 type MemoryShares struct {
@@ -69,13 +80,16 @@ const (
 )
 
 type Glossary struct {
-	ID         string     `json:"id"`
-	Name       string     `json:"name"`
-	OwnerID    string     `json:"owner_id"`
-	CreatedAt  time.Time  `json:"created_at"`
-	UpdatedAt  time.Time  `json:"updated_at"`
-	SharedAt   time.Time  `json:"shared_at"`
-	IsPersonal bool       `json:"is_personal"`
+	ID         string    `json:"id"`
+	Name       string    `json:"name"`
+	OwnerID    string    `json:"owner_id"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
+	SharedAt   time.Time `json:"shared_at"`
+	IsPersonal bool      `json:"is_personal"`
+	// Effective combined mask in GET list/detail; selected share's stored mask in GET /shares.
+	// Nil when omitted, including non-GET responses.
+	PermissionMask *PermissionMask `json:"permission_mask,omitempty"`
 }
 
 type GlossaryShares struct {
@@ -231,14 +245,17 @@ func (g *NGGlossaryMatchGroups) UnmarshalJSON(data []byte) error {
 }
 
 type Styleguide struct {
-	ID         string     `json:"id"`
-	Name       string     `json:"name"`
-	Content    *string    `json:"content,omitempty"`
-	OwnerID    string     `json:"owner_id"`
-	CreatedAt  time.Time  `json:"created_at"`
-	UpdatedAt  time.Time  `json:"updated_at"`
-	SharedAt   time.Time  `json:"shared_at"`
-	IsPersonal bool       `json:"is_personal"`
+	ID         string    `json:"id"`
+	Name       string    `json:"name"`
+	Content    *string   `json:"content,omitempty"`
+	OwnerID    string    `json:"owner_id"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
+	SharedAt   time.Time `json:"shared_at"`
+	IsPersonal bool      `json:"is_personal"`
+	// Effective combined mask in GET list/detail; selected share's stored mask in GET /shares.
+	// Nil when omitted, including non-GET responses.
+	PermissionMask *PermissionMask `json:"permission_mask,omitempty"`
 }
 
 type StyleguideShares struct {
