@@ -148,6 +148,9 @@ func (t *Translator) Translate(text interface{}, source string, target string, o
 	if opts.Reasoning != nil {
 		body["reasoning"] = *opts.Reasoning
 	}
+	if opts.ImageContext != nil {
+		body["image_context"] = opts.ImageContext
+	}
 	if opts.Metadata != nil {
 		body["metadata"] = opts.Metadata
 	}

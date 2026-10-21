@@ -274,21 +274,62 @@ type StyleguideResults struct {
 	Changes             []StyleguideChange `json:"changes"`
 }
 
+// ImageContext contains an HTTPS URL or a base64 PNG, JPEG or WebP data URL.
+type ImageContext struct {
+	URL string `json:"url"`
+}
+
+type IntelligenceError struct {
+	StatusCode int    `json:"status_code"`
+	Message    string `json:"message"`
+}
+
+type IntelligenceFailure struct {
+	Applied bool              `json:"applied"`
+	Error   IntelligenceError `json:"error"`
+}
+
+type ReferenceRetrievalFailure struct {
+	// Applied is false or the string "partial".
+	Applied interface{}       `json:"applied"`
+	Error   IntelligenceError `json:"error"`
+}
+
+type ReasoningWarning struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}
+
+type ReasoningFeedback struct {
+	Applied  bool               `json:"applied"`
+	Error    *IntelligenceError `json:"error,omitempty"`
+	Warnings []ReasoningWarning `json:"warnings,omitempty"`
+}
+
+type TextWarnings struct {
+	Reasoning  *ReasoningFeedback         `json:"reasoning,omitempty"`
+	References *ReferenceRetrievalFailure `json:"references,omitempty"`
+	Prosa      *IntelligenceFailure       `json:"prosa,omitempty"`
+}
+
 type TranslateOptions struct {
-	AdaptTo                       []string
-	Glossaries                    []string
-	Instructions                  []string
-	ContentType                   string
-	Multiline                     *bool
-	TimeoutMs                     int
-	Priority                      string
-	UseCache                      *bool
-	CacheTTL                      *int
-	SourceHint                    string
-	NoTrace                       *bool
-	Verbose                       *bool
-	Style                         TranslationStyle
-	Reasoning                     *bool
+	AdaptTo      []string
+	Glossaries   []string
+	Instructions []string
+	ContentType  string
+	Multiline    *bool
+	TimeoutMs    int
+	Priority     string
+	UseCache     *bool
+	CacheTTL     *int
+	SourceHint   string
+	NoTrace      *bool
+	Verbose      *bool
+	Style        TranslationStyle
+	Reasoning    *bool
+	// ImageContext accepts ImageContext or []ImageContext (at most one image).
+	// Non-empty context requires Reasoning=true. Validation is performed by the API.
+	ImageContext                  interface{}
 	Metadata                      interface{}
 	StyleguideID                  string
 	StyleguideReasoning           *bool
@@ -316,6 +357,7 @@ type ProfanitiesResult struct {
 }
 
 type TextResult struct {
+	Warnings          *TextWarnings         `json:"warnings,omitempty"`
 	ContentType       string                `json:"content_type"`
 	SourceLanguage    string                `json:"source_language"`
 	Translation       Translation           `json:"translation"`
