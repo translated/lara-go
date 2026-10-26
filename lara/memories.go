@@ -16,6 +16,7 @@ func newMemoriesService(client *Client) *MemoriesService {
 	}
 }
 
+// Deprecated: use ListPaginated instead.
 func (m *MemoriesService) List() ([]Memory, error) {
 	var memories []Memory
 	err := m.client.Get("/v2/memories", nil, nil, &memories)
@@ -23,6 +24,21 @@ func (m *MemoriesService) List() ([]Memory, error) {
 		return nil, fmt.Errorf("failed to list memories: %w", err)
 	}
 	return memories, nil
+}
+
+// ListPaginated lists resources with optional name filtering and pagination.
+// Nil or empty options return all resources. Supplying search, page or size enables
+// pagination; omitted page and size default to 1 and 20, respectively.
+func (m *MemoriesService) ListPaginated(options *ResourceQueryOptions) (*MemoryCollectionResult, error) {
+	var result MemoryCollectionResult
+	metadata, err := m.client.getCollection("/v2/memories", options, &result.Items)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list memories: %w", err)
+	}
+	result.Total = metadata.total
+	result.Page = metadata.page
+	result.Size = metadata.size
+	return &result, nil
 }
 
 func (m *MemoriesService) Create(name string) (*Memory, error) {

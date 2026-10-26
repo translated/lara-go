@@ -17,6 +17,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -34,6 +35,12 @@ type Client struct {
 
 type authResponse struct {
 	Token string `json:"token"`
+}
+
+type collectionMetadata struct {
+	total int
+	page  *int
+	size  *int
 }
 
 func newClient(auth interface{}, baseURL, sessionID string) *Client {
@@ -227,6 +234,11 @@ func (c *Client) request(method, path string, params map[string]string, body int
 }
 
 func (c *Client) doRequest(method, path string, params map[string]string, body interface{}, files map[string]*os.File, headers map[string]string, retryCount int) ([]byte, error) {
+	responseBody, _, err := c.doRequestWithMetadata(method, path, params, body, files, headers, retryCount)
+	return responseBody, err
+}
+
+func (c *Client) doRequestWithMetadata(method, path string, params map[string]string, body interface{}, files map[string]*os.File, headers map[string]string, retryCount int) ([]byte, http.Header, error) {
 	if !strings.HasPrefix(path, "/") {
 		path = "/" + path
 	}
@@ -269,10 +281,10 @@ func (c *Client) doRequest(method, path string, params map[string]string, body i
 
 			fw, err := w.CreatePart(h)
 			if err != nil {
-				return nil, fmt.Errorf("failed to create form file: %w", err)
+				return nil, nil, fmt.Errorf("failed to create form file: %w", err)
 			}
 			if _, err := io.Copy(fw, f); err != nil {
-				return nil, fmt.Errorf("failed to copy file data: %w", err)
+				return nil, nil, fmt.Errorf("failed to copy file data: %w", err)
 			}
 		}
 		if body != nil {
@@ -284,7 +296,7 @@ func (c *Client) doRequest(method, path string, params map[string]string, body i
 					default:
 						jsonBytes, err := json.Marshal(v)
 						if err != nil {
-							return nil, fmt.Errorf("failed to marshal field %s: %w", key, err)
+							return nil, nil, fmt.Errorf("failed to marshal field %s: %w", key, err)
 						}
 						_ = w.WriteField(key, string(jsonBytes))
 					}
@@ -305,7 +317,7 @@ func (c *Client) doRequest(method, path string, params map[string]string, body i
 
 		bodyBytes, err := json.Marshal(body)
 		if err != nil {
-			return nil, fmt.Errorf("failed to marshal request body: %w", err)
+			return nil, nil, fmt.Errorf("failed to marshal request body: %w", err)
 		}
 		bodyReader = bytes.NewReader(bodyBytes)
 		contentType = "application/json"
@@ -315,7 +327,7 @@ func (c *Client) doRequest(method, path string, params map[string]string, body i
 
 	req, err := http.NewRequest(method, reqURL, bodyReader)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
+		return nil, nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
 	req.Header.Set("X-HTTP-Method-Override", method)
@@ -337,7 +349,7 @@ func (c *Client) doRequest(method, path string, params map[string]string, body i
 	if c.isTokenExpired() {
 		c.token = ""
 		if err := c.refreshOrReauthenticate(); err != nil {
-			return nil, fmt.Errorf("authentication failed: %w", err)
+			return nil, nil, fmt.Errorf("authentication failed: %w", err)
 		}
 	}
 
@@ -347,41 +359,41 @@ func (c *Client) doRequest(method, path string, params map[string]string, body i
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		if strings.Contains(err.Error(), "timeout") {
-			return nil, &LaraTimeoutError{Message: err.Error()}
+			return nil, nil, &LaraTimeoutError{Message: err.Error()}
 		}
-		return nil, &LaraConnectionError{Message: err.Error()}
+		return nil, nil, &LaraConnectionError{Message: err.Error()}
 	}
 	defer resp.Body.Close()
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %w", err)
+		return nil, nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
 	// Handle 401 with automatic token refresh and retry (once)
 	if resp.StatusCode == 401 && retryCount < 1 {
 		c.token = ""
 		if err := c.refreshOrReauthenticate(); err != nil {
-			return nil, fmt.Errorf("token refresh failed: %w", err)
+			return nil, nil, fmt.Errorf("token refresh failed: %w", err)
 		}
 		// Multipart encoding consumed the files; replay the same bytes after refresh.
 		for field := range files {
 			offset, ok := fileOffsets[field]
 			if !ok {
-				return nil, fmt.Errorf("cannot retry upload of non-seekable file %s", field)
+				return nil, nil, fmt.Errorf("cannot retry upload of non-seekable file %s", field)
 			}
 			if _, err := files[field].Seek(offset, io.SeekStart); err != nil {
-				return nil, fmt.Errorf("failed to rewind file for retry: %w", err)
+				return nil, nil, fmt.Errorf("failed to rewind file for retry: %w", err)
 			}
 		}
-		return c.doRequest(method, path, params, body, files, headers, retryCount+1)
+		return c.doRequestWithMetadata(method, path, params, body, files, headers, retryCount+1)
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, parseAPIError(resp.StatusCode, respBody)
+		return nil, nil, parseAPIError(resp.StatusCode, respBody)
 	}
 
-	return respBody, nil
+	return respBody, resp.Header, nil
 }
 
 func (c *Client) httpDate() string {
@@ -434,6 +446,46 @@ func processStreamLine(line []byte, callback func([]byte) error) error {
 
 func (c *Client) handleContent(respBytes []byte, result interface{}) error {
 	return json.Unmarshal(respBytes, result)
+}
+
+func readCollectionInteger(headers http.Header, name string, minimum int) *int {
+	values := headers.Values(name)
+	if len(values) != 1 {
+		return nil
+	}
+	value := strings.Trim(values[0], " \t")
+	if value == "" {
+		return nil
+	}
+	for _, digit := range value {
+		if digit < '0' || digit > '9' {
+			return nil
+		}
+	}
+	number, err := strconv.Atoi(value)
+	if err != nil || number < minimum {
+		return nil
+	}
+	return &number
+}
+
+func (c *Client) getCollection(path string, options *ResourceQueryOptions, items interface{}) (*collectionMetadata, error) {
+	body, headers, err := c.doRequestWithMetadata("GET", path, options.params(), nil, nil, nil, 0)
+	if err != nil {
+		return nil, err
+	}
+	if err := c.handleContent(body, items); err != nil {
+		return nil, err
+	}
+	total := readCollectionInteger(headers, "X-Total-Count", 0)
+	if total == nil {
+		return nil, fmt.Errorf("missing or invalid X-Total-Count response header")
+	}
+	return &collectionMetadata{
+		total: *total,
+		page:  readCollectionInteger(headers, "X-Page", 1),
+		size:  readCollectionInteger(headers, "X-Page-Size", 1),
+	}, nil
 }
 
 func (c *Client) Get(path string, params map[string]string, headers map[string]string, result interface{}) error {

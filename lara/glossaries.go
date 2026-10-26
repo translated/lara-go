@@ -18,6 +18,7 @@ func newGlossariesService(client *Client) *GlossariesService {
 	}
 }
 
+// Deprecated: use ListPaginated instead.
 func (g *GlossariesService) List() ([]Glossary, error) {
 	var glossaries []Glossary
 	err := g.client.Get("/v2/glossaries", nil, nil, &glossaries)
@@ -25,6 +26,21 @@ func (g *GlossariesService) List() ([]Glossary, error) {
 		return nil, fmt.Errorf("failed to list glossaries: %w", err)
 	}
 	return glossaries, nil
+}
+
+// ListPaginated lists resources with optional name filtering and pagination.
+// Nil or empty options return all resources. Supplying search, page or size enables
+// pagination; omitted page and size default to 1 and 20, respectively.
+func (g *GlossariesService) ListPaginated(options *ResourceQueryOptions) (*GlossaryCollectionResult, error) {
+	var result GlossaryCollectionResult
+	metadata, err := g.client.getCollection("/v2/glossaries", options, &result.Items)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list glossaries: %w", err)
+	}
+	result.Total = metadata.total
+	result.Page = metadata.page
+	result.Size = metadata.size
+	return &result, nil
 }
 
 func (g *GlossariesService) Create(name string) (*Glossary, error) {

@@ -63,12 +63,12 @@ func main() {
 	fmt.Printf("📝 Updated name: '%s' -> '%s'\n", memory.Name, updatedMemory.Name)
 
 	// List all memories
-	memories, err := laraTranslator.Memories.List()
+	memories, err := laraTranslator.Memories.ListPaginated(nil)
 	if err != nil {
 		log.Printf("Error listing memories: %v", err)
 		return
 	}
-	fmt.Printf("📝 Total memories: %d\n", len(memories))
+	fmt.Printf("📝 Total memories: %d\n", memories.Total)
 	fmt.Println()
 
 	// Example 2: Adding translations

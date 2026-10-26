@@ -51,11 +51,11 @@ func main() {
 		glossaryID = glossary.ID
 
 		// List all glossaries
-		glossaries, err := laraTranslator.Glossaries.List()
+		glossaries, err := laraTranslator.Glossaries.ListPaginated(nil)
 		if err != nil {
 			return fmt.Errorf("Error listing glossaries: %v", err)
 		}
-		fmt.Printf("📝 Total glossaries: %d\n", len(glossaries))
+		fmt.Printf("📝 Total glossaries: %d\n", glossaries.Total)
 		fmt.Println()
 
 		// Example 2: Glossary operations

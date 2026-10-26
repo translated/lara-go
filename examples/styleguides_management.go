@@ -45,11 +45,11 @@ func main() {
 		styleguideID = styleguide.ID
 
 		// List all styleguides
-		styleguides, err := laraTranslator.Styleguides.List()
+		styleguides, err := laraTranslator.Styleguides.ListPaginated(nil)
 		if err != nil {
 			return fmt.Errorf("Error listing styleguides: %v", err)
 		}
-		fmt.Printf("📝 Total styleguides: %d\n", len(styleguides))
+		fmt.Printf("📝 Total styleguides: %d\n", styleguides.Total)
 		fmt.Println()
 
 		// Example 2: Styleguide operations

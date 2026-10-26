@@ -499,6 +499,38 @@ memory, err := laraTranslator.Memories.Create("MyMemory")
 // Create memory with external ID (MyMemory integration)
 memory, err := laraTranslator.Memories.CreateWithExternalID("Memory from MyMemory", "aabb1122")  // Replace with actual external ID
 
+// ListPaginated supports optional name filtering and pagination. With nil or empty
+// options, it returns the complete list of memories without pagination.
+// Providing Search, Page or Size enables pagination.
+memoryResult, err := laraTranslator.Memories.ListPaginated(nil)
+if err != nil {
+    log.Fatal(err)
+}
+memories, memoryTotal := memoryResult.Items, memoryResult.Total
+
+// Providing Page or Size enables pagination (Page starts at 1; Size: 1-200).
+// The missing parameter defaults to Page 1 or Size 20.
+page, size := 2, 50
+memoryPage, err := laraTranslator.Memories.ListPaginated(&lara.ResourceQueryOptions{
+    Page: &page,
+    Size: &size,
+})
+memoryDefaultSize, err := laraTranslator.Memories.ListPaginated(&lara.ResourceQueryOptions{Page: &page}) // Page 2, 20 per page
+memoryFirstPage, err := laraTranslator.Memories.ListPaginated(&lara.ResourceQueryOptions{Size: &size}) // Page 1, 50 per page
+
+// Pass Search to filter by displayed name (case- and accent-insensitive).
+// It matches substrings and preserves spaces.
+// Combine Search with Page and Size to paginate matching results.
+// If omitted, Page defaults to 1 and Size to 20.
+search := "Marketing"
+memorySearch, err := laraTranslator.Memories.ListPaginated(&lara.ResourceQueryOptions{
+    Search: &search,
+    Page:   &page,
+    Size:   &size,
+})
+
+// List() is deprecated; use ListPaginated instead.
+
 // Important: To update/overwrite a translation unit you must provide a tuid. Calls without a tuid always create a new unit and will not update existing entries.
 // Add translation to single memory
 memoryImport, err := laraTranslator.Memories.AddTranslation("mem_1A2b3C4d5E6f7G8h9I0jKl", "en-US", "fr-FR", "Hello", "Bonjour")
@@ -564,6 +596,38 @@ _, err = laraTranslator.Memories.RevokeAccountShare(memory.ID)
 // Create glossary
 glossary, err := laraTranslator.Glossaries.Create("MyGlossary")
 
+// ListPaginated supports optional name filtering and pagination. With nil or empty
+// options, it returns the complete list of glossaries without pagination.
+// Providing Search, Page or Size enables pagination.
+glossaryResult, err := laraTranslator.Glossaries.ListPaginated(nil)
+if err != nil {
+    log.Fatal(err)
+}
+glossaries, glossaryTotal := glossaryResult.Items, glossaryResult.Total
+
+// Providing Page or Size enables pagination (Page starts at 1; Size: 1-200).
+// The missing parameter defaults to Page 1 or Size 20.
+page, size := 2, 50
+glossaryPage, err := laraTranslator.Glossaries.ListPaginated(&lara.ResourceQueryOptions{
+    Page: &page,
+    Size: &size,
+})
+glossaryDefaultSize, err := laraTranslator.Glossaries.ListPaginated(&lara.ResourceQueryOptions{Page: &page}) // Page 2, 20 per page
+glossaryFirstPage, err := laraTranslator.Glossaries.ListPaginated(&lara.ResourceQueryOptions{Size: &size}) // Page 1, 50 per page
+
+// Pass Search to filter by displayed name (case- and accent-insensitive).
+// It matches substrings and preserves spaces.
+// Combine Search with Page and Size to paginate matching results.
+// If omitted, Page defaults to 1 and Size to 20.
+search := "Marketing"
+glossarySearch, err := laraTranslator.Glossaries.ListPaginated(&lara.ResourceQueryOptions{
+    Search: &search,
+    Page:   &page,
+    Size:   &size,
+})
+
+// List() is deprecated; use ListPaginated instead.
+
 // Import a glossary file (use GlossaryFileFormatTbx for TBX files)
 glossaryFilePath := "/path/to/your/glossary.csv"
 glossaryImport, err := laraTranslator.Glossaries.ImportFileFromPath("gls_1A2b3C4d5E6f7G8h9I0jKl", glossaryFilePath,
@@ -610,8 +674,37 @@ _, err = laraTranslator.Glossaries.RevokeAccountShare(glossary.ID)
 // Create styleguide
 styleguide, err := laraTranslator.Styleguides.Create("MyStyleguide", "Always use formal language.")
 
-// List all styleguides
-styleguides, err := laraTranslator.Styleguides.List()
+// ListPaginated supports optional name filtering and pagination. With nil or empty
+// options, it returns the complete list of styleguides without pagination.
+// Providing Search, Page or Size enables pagination.
+styleguideResult, err := laraTranslator.Styleguides.ListPaginated(nil)
+if err != nil {
+    log.Fatal(err)
+}
+styleguides, styleguideTotal := styleguideResult.Items, styleguideResult.Total
+
+// Providing Page or Size enables pagination (Page starts at 1; Size: 1-200).
+// The missing parameter defaults to Page 1 or Size 20.
+page, size := 2, 50
+styleguidePage, err := laraTranslator.Styleguides.ListPaginated(&lara.ResourceQueryOptions{
+    Page: &page,
+    Size: &size,
+})
+styleguideDefaultSize, err := laraTranslator.Styleguides.ListPaginated(&lara.ResourceQueryOptions{Page: &page}) // Page 2, 20 per page
+styleguideFirstPage, err := laraTranslator.Styleguides.ListPaginated(&lara.ResourceQueryOptions{Size: &size}) // Page 1, 50 per page
+
+// Pass Search to filter by displayed name (case- and accent-insensitive).
+// It matches substrings and preserves spaces.
+// Combine Search with Page and Size to paginate matching results.
+// If omitted, Page defaults to 1 and Size to 20.
+search := "Marketing"
+styleguideSearch, err := laraTranslator.Styleguides.ListPaginated(&lara.ResourceQueryOptions{
+    Search: &search,
+    Page:   &page,
+    Size:   &size,
+})
+
+// List() is deprecated; use ListPaginated instead.
 
 // Get a specific styleguide
 styleguide, err = laraTranslator.Styleguides.Get("stg_1A2b3C4d5E6f7G8h9I0jKl")

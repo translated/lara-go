@@ -12,6 +12,7 @@ func newStyleguidesService(client *Client) *StyleguidesService {
 	}
 }
 
+// Deprecated: use ListPaginated instead.
 func (s *StyleguidesService) List() ([]Styleguide, error) {
 	var styleguides []Styleguide
 	err := s.client.Get("/v2/styleguides", nil, nil, &styleguides)
@@ -19,6 +20,21 @@ func (s *StyleguidesService) List() ([]Styleguide, error) {
 		return nil, fmt.Errorf("failed to list styleguides: %w", err)
 	}
 	return styleguides, nil
+}
+
+// ListPaginated lists resources with optional name filtering and pagination.
+// Nil or empty options return all resources. Supplying search, page or size enables
+// pagination; omitted page and size default to 1 and 20, respectively.
+func (s *StyleguidesService) ListPaginated(options *ResourceQueryOptions) (*StyleguideCollectionResult, error) {
+	var result StyleguideCollectionResult
+	metadata, err := s.client.getCollection("/v2/styleguides", options, &result.Items)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list styleguides: %w", err)
+	}
+	result.Total = metadata.total
+	result.Page = metadata.page
+	result.Size = metadata.size
+	return &result, nil
 }
 
 func (s *StyleguidesService) Create(name, content string) (*Styleguide, error) {

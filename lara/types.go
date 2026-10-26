@@ -3,8 +3,36 @@ package lara
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"time"
 )
+
+// ResourceQueryOptions configures resource name filtering and pagination.
+// Nil fields are omitted. The API validates options and supplies defaults.
+type ResourceQueryOptions struct {
+	// Filter by visible resource name (1-255 characters). Enables pagination.
+	Search *string `json:"search,omitempty"`
+	// Page number (1-based). Enables pagination when provided.
+	Page *int `json:"page,omitempty"`
+	// Page size (1-200). Enables pagination when provided.
+	Size *int `json:"size,omitempty"`
+}
+
+func (o *ResourceQueryOptions) params() map[string]string {
+	params := map[string]string{}
+	if o != nil {
+		if o.Search != nil {
+			params["search"] = *o.Search
+		}
+		if o.Page != nil {
+			params["page"] = strconv.Itoa(*o.Page)
+		}
+		if o.Size != nil {
+			params["size"] = strconv.Itoa(*o.Size)
+		}
+	}
+	return params
+}
 
 type Memory struct {
 	ID                 string    `json:"id"`
@@ -19,6 +47,17 @@ type Memory struct {
 	// Effective combined mask in GET list/detail; selected share's stored mask in GET /shares.
 	// Nil when omitted, including non-GET responses.
 	PermissionMask *PermissionMask `json:"permission_mask,omitempty"`
+}
+
+// MemoryCollectionResult contains matching memories and collection metadata.
+type MemoryCollectionResult struct {
+	Items []Memory `json:"items"`
+	// Total number of matching resources, including those outside this page.
+	Total int `json:"total"`
+	// Current page (1-based), or nil for an unpaginated response.
+	Page *int `json:"page,omitempty"`
+	// Page size, or nil for an unpaginated response.
+	Size *int `json:"size,omitempty"`
 }
 
 // PermissionMask uses read, write, export, share order; a dash means absent.
@@ -88,6 +127,17 @@ type Glossary struct {
 	// Effective combined mask in GET list/detail; selected share's stored mask in GET /shares.
 	// Nil when omitted, including non-GET responses.
 	PermissionMask *PermissionMask `json:"permission_mask,omitempty"`
+}
+
+// GlossaryCollectionResult contains matching glossaries and collection metadata.
+type GlossaryCollectionResult struct {
+	Items []Glossary `json:"items"`
+	// Total number of matching resources, including those outside this page.
+	Total int `json:"total"`
+	// Current page (1-based), or nil for an unpaginated response.
+	Page *int `json:"page,omitempty"`
+	// Page size, or nil for an unpaginated response.
+	Size *int `json:"size,omitempty"`
 }
 
 type GlossaryShares struct {
@@ -253,6 +303,17 @@ type Styleguide struct {
 	// Effective combined mask in GET list/detail; selected share's stored mask in GET /shares.
 	// Nil when omitted, including non-GET responses.
 	PermissionMask *PermissionMask `json:"permission_mask,omitempty"`
+}
+
+// StyleguideCollectionResult contains matching styleguides and collection metadata.
+type StyleguideCollectionResult struct {
+	Items []Styleguide `json:"items"`
+	// Total number of matching resources, including those outside this page.
+	Total int `json:"total"`
+	// Current page (1-based), or nil for an unpaginated response.
+	Page *int `json:"page,omitempty"`
+	// Page size, or nil for an unpaginated response.
+	Size *int `json:"size,omitempty"`
 }
 
 type StyleguideShares struct {
