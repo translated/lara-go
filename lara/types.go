@@ -373,6 +373,15 @@ type TextWarnings struct {
 	Prosa      *IntelligenceFailure       `json:"prosa,omitempty"`
 }
 
+// ReasoningEffort controls reasoning in text translation.
+type ReasoningEffort string
+
+const (
+	ReasoningEffortLow    ReasoningEffort = "low"
+	ReasoningEffortMedium ReasoningEffort = "medium"
+	ReasoningEffortHigh   ReasoningEffort = "high"
+)
+
 type TranslateOptions struct {
 	AdaptTo      []string
 	Glossaries   []string
@@ -388,6 +397,8 @@ type TranslateOptions struct {
 	Verbose      *bool
 	Style        TranslationStyle
 	Reasoning    *bool
+	// Effort requires Reasoning=true. Leave empty to use the server default.
+	Effort ReasoningEffort
 	// ImageContext accepts ImageContext or []ImageContext (at most one image).
 	// Non-empty context requires Reasoning=true. Validation is performed by the API.
 	ImageContext                  interface{}

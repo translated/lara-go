@@ -244,6 +244,20 @@ result, err := laraTranslator.Translate("Hello", "en-US", "fr-FR", lara.Translat
 })
 ```
 
+#### Reasoning Effort
+
+Set `effort` to `low`, `medium`, or `high` to control translation reasoning effort.
+Reasoning must be enabled. Omit the option to use the server default; the API
+validates the combination.
+
+```go
+reasoning := true
+result, err := laraTranslator.Translate("Hello", "en-US", "it-IT", lara.TranslateOptions{
+    Reasoning: &reasoning,
+    Effort:    lara.ReasoningEffortHigh,
+})
+```
+
 #### Text Translation with Image Context
 
 Pass `ImageContext` to use an image as visual context for translating text, with reasoning enabled:
