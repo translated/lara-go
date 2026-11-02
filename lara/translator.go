@@ -145,8 +145,8 @@ func (t *Translator) Translate(text interface{}, source string, target string, o
 	if opts.Style != "" {
 		body["style"] = opts.Style
 	}
-	if opts.Effort != "" {
-		body["effort"] = string(opts.Effort)
+	if opts.ReasoningEffort != "" {
+		body["effort"] = string(opts.ReasoningEffort)
 	}
 	if opts.Reasoning != nil {
 		body["reasoning"] = *opts.Reasoning

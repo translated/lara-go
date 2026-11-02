@@ -398,8 +398,8 @@ type TranslateOptions struct {
 	Verbose      *bool
 	Style        TranslationStyle
 	Reasoning    *bool
-	// Effort requires Reasoning=true. Leave empty to use the server default.
-	Effort ReasoningEffort
+	// ReasoningEffort requires Reasoning=true. Leave empty to use the server default.
+	ReasoningEffort ReasoningEffort
 	// ImageContext accepts ImageContext or []ImageContext (at most one image).
 	// Non-empty context requires Reasoning=true. Validation is performed by the API.
 	ImageContext                  interface{}

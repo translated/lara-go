@@ -246,15 +246,15 @@ result, err := laraTranslator.Translate("Hello", "en-US", "fr-FR", lara.Translat
 
 #### Reasoning Effort
 
-Set `effort` to `low`, `medium`, or `high` to control translation reasoning effort.
+Set `ReasoningEffort` to `low`, `medium`, or `high` to control translation reasoning effort.
 Reasoning must be enabled. Omit the option to use the server default; the API
 validates the combination.
 
 ```go
 reasoning := true
 result, err := laraTranslator.Translate("Hello", "en-US", "it-IT", lara.TranslateOptions{
-    Reasoning: &reasoning,
-    Effort:    lara.ReasoningEffortHigh,
+    Reasoning:       &reasoning,
+    ReasoningEffort: lara.ReasoningEffortHigh,
 })
 ```
 
