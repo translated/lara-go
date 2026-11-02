@@ -387,6 +387,7 @@ type TranslateOptions struct {
 	Glossaries   []string
 	Instructions []string
 	ContentType  string
+	// Deprecated: This parameter is deprecated.
 	Multiline    *bool
 	TimeoutMs    int
 	Priority     string

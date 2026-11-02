@@ -752,7 +752,6 @@ type TranslateOptions struct {
     Instructions []string                   // Translation instructions
     Style        TranslationStyle           // Translation style (fluid, faithful, creative)
     ContentType  string                     // Content type (text/plain, text/html, etc.)
-    Multiline    *bool                      // Enable multiline translation
     TimeoutMs    int                        // Request timeout in milliseconds
     SourceHint   string                     // Hint for source language detection
     NoTrace      *bool                      // Disable request tracing
